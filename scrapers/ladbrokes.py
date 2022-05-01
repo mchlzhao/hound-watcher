@@ -3,8 +3,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
-import time
-
 from scrapers.scraper import Scraper
 
 class LadbrokesScraper(Scraper):
