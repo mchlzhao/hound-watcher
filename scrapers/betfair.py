@@ -9,8 +9,8 @@ import time
 from scrapers.scraper import Scraper
 
 class BetfairScraper(Scraper):
-    def __init__(self, data_store, data_store_lock, scraper_name, website):
-        super().__init__(data_store, data_store_lock, scraper_name, website)
+    def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
+        super().__init__(data_store, data_store_lock, scraper_name, website, headless)
 
         self.highest_matched = -1
 
@@ -18,7 +18,6 @@ class BetfairScraper(Scraper):
         try:
             elems = (WebDriverWait(self._driver, self._TIMEOUT)
                 .until(EC.visibility_of_all_elements_located((By.XPATH, '//form[@class="ssc-lif"]'))))
-            print("Page is ready!")
             elem = elems[0]
         except TimeoutException:
             print(f'Loading {self._scraper_name} took too much time!')
@@ -42,7 +41,6 @@ class BetfairScraper(Scraper):
             elems = WebDriverWait(self._driver, self._TIMEOUT).until(
                 EC.visibility_of_all_elements_located(
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
-            print("Page is ready!")
             elem = elems[0]
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')

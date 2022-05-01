@@ -29,6 +29,7 @@ class Scraper:
         while self.running:
             self.loop()
             time.sleep(self._LOOP_PERIOD)
+        self.teardown()
 
     def setup(self):
         pass

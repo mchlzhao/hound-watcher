@@ -10,7 +10,6 @@ class LadbrokesScraper(Scraper):
         try:
             elems = WebDriverWait(self._driver, self._TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, '//table[contains(@class, "race-table")]')))
-            print("Page is ready!")
             elem = elems[0]
         except TimeoutException:
             print(f'Loading {self._scraper_name} took too much time!')

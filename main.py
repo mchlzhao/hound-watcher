@@ -1,5 +1,8 @@
+import signal
 import threading
 import time
+
+from tabulate import tabulate
 
 from scrapers.betfair import BetfairScraper
 from scrapers.ladbrokes import LadbrokesScraper
@@ -24,29 +27,45 @@ def analyse_data(market_data, bonus_to_cash=0.75):
             evs[key][name] = ev
     return evs
 
-# 15:15 bendigo
-betfair_win_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198449109?nodeId=31416182'
-# 15:15 bendigo
-betfair_place_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198449110?nodeId=31416182'
-# 15:15 bendigo
-ladbrokes_website = 'https://www.ladbrokes.com.au/racing/bendigo/4e300506-9449-446f-9570-79a96d6239b4'
+def sigint_handler(signum, frame):
+    global running
+    for scraper in scrapers:
+        scraper.running = False
+    for thread in threads:
+        thread.join()
+    exit(0)
+
+signal.signal(signal.SIGINT, sigint_handler)
+
+
+
+# 18:29 mandurah r1
+betfair_win_website = 'https://www.betfair.com.au/exchange/plus/greyhound-racing/market/1.198503122?nodeId=31419158'
+betfair_place_website = 'https://www.betfair.com.au/exchange/plus/greyhound-racing/market/1.198503123?nodeId=31419158'
+ladbrokes_website = 'https://www.ladbrokes.com.au/racing/mandurah/e407b7fb-457a-4c70-935c-717fef4daab1'
 
 data_store = {}
 data_store_lock = threading.Lock()
+scrapers = []
+threads = []
 
-betfair_win_scraper = BetfairScraper(data_store, data_store_lock, 'betfair_win', betfair_win_website)
-betfair_win_thread = threading.Thread(target=betfair_win_scraper.setup_and_run)
-betfair_win_thread.start()
+scraper_info = [
+    ('betfair_win', betfair_win_website, BetfairScraper, True),
+    ('betfair_place', betfair_place_website, BetfairScraper, True),
+    ('ladbrokes', ladbrokes_website, LadbrokesScraper, False)
+]
 
-betfair_place_scraper = BetfairScraper(data_store, data_store_lock, 'betfair_place', betfair_place_website)
-betfair_place_thread = threading.Thread(target=betfair_place_scraper.setup_and_run)
-betfair_place_thread.start()
-
-ladbrokes_scraper = LadbrokesScraper(data_store, data_store_lock, 'ladbrokes', ladbrokes_website)
-ladbrokes_thread = threading.Thread(target=ladbrokes_scraper.setup_and_run)
-ladbrokes_thread.start()
+for name, website, scraper_class, headless, in scraper_info:
+    scraper = scraper_class(data_store, data_store_lock, name, website, headless)
+    scrapers.append(scraper)
+    thread = threading.Thread(target=scraper.setup_and_run)
+    thread.start()
+    threads.append(thread)
 
 while True:
-    print(data_store)
-    print(analyse_data(data_store, 0.75))
-    time.sleep(1)
+    evs = analyse_data(data_store, 0.75)
+    for key in evs:
+        print('\n' * 10)
+        print(key)
+        print(tabulate(sorted(evs[key].items(), key=lambda x: -x[1]), headers=['Name', 'EV']))
+    time.sleep(5)
