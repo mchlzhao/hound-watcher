@@ -3,6 +3,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
+from odds_types import Back
 from scrapers.scraper import Scraper
 
 class LadbrokesScraper(Scraper):
@@ -30,5 +31,5 @@ class LadbrokesScraper(Scraper):
                     .find_element(by=By.XPATH, value='.//span[@data-testid="price-button-odds"]')
                     .text)
             
-            data[name] = win_price
+            data[name] = Back(win_price)
         self.update_data_store(data)
