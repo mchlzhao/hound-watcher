@@ -8,89 +8,9 @@ import os
 import threading
 import time
 
+from scrapers.betfair import BetfairScraper
+
 market_data = {}
-
-def scrape_odds_betfair(website, market_name, lock):
-    global market_data
-    driver = webdriver.Chrome(path)
-    driver.get(website)
-
-    delay = 5
-    try:
-        elems = WebDriverWait(driver, delay).until(
-            EC.visibility_of_all_elements_located(
-                (By.XPATH, '//form[@class="ssc-lif"]')))
-        print("Page is ready!")
-        elem = elems[0]
-    except TimeoutException:
-        print(f'Loading {website} took too much time!')
-        driver.close()
-        return
-    
-    (elem
-        .find_element(by=By.XPATH, value='.//input[@id="ssc-liu"]')
-        .send_keys(os.environ['BETFAIR_UN']))
-    (elem
-        .find_element(by=By.XPATH, value='.//input[@id="ssc-lipw"]')
-        .send_keys(os.environ['BETFAIR_PW']))
-    (elem
-        .find_element(by=By.XPATH, value='.//input[@id="ssc-lis"]')
-        .click())
-    time.sleep(5)
-
-    highest_matched = -1
-
-    def f(depth):
-        delay = 5 # seconds
-        try:
-            elems = WebDriverWait(driver, delay).until(
-                EC.visibility_of_all_elements_located(
-                    (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
-            print("Page is ready!")
-            elem = elems[0]
-        except TimeoutException:
-            print(f'Loading {website} took too much time!')
-            driver.close()
-            return
-
-        matched = int(elem
-            .find_element(by=By.XPATH, value='.//span[@class="total-matched"]')
-            .text.split()[1].replace(',', ''))
-        nonlocal highest_matched
-        if matched > highest_matched:
-            highest_matched = matched
-            data = {}
-            data['matched'] = matched
-            data['markets'] = {}
-
-            runners = (elem
-                .find_elements(by=By.XPATH, value='.//tr[@class="runner-line"]'))
-            for runner in runners:
-                runner_name = runner.find_element(by=By.XPATH, value='.//h3[contains(@class, "runner-name")]').text
-                def get_price(text):
-                    val = (runner
-                        .find_element(by=By.XPATH, value=f'.//td[contains(@class, "{text}-cell")]')
-                        .find_element(by=By.XPATH, value='.//span[@class="bet-button-price"]')
-                        .text)
-                    try:
-                        return float(val)
-                    except ValueError:
-                        return None
-                data['markets'][runner_name] = (get_price('last-back'), get_price('first-lay'))
-            lock.acquire()
-            market_data[market_name] = data
-            lock.release()
-            
-        refresh_button = elem.find_element(by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')
-        refresh_button.click()
-
-        time.sleep(1)
-
-        if depth < 100:
-            f(depth+1)
-
-    f(0)
-    driver.close()
 
 def scrape_odds_ladbrokes(website):
     driver = webdriver.Chrome(path)
@@ -185,7 +105,17 @@ except Exception as e:
 
 '''
 
-ladbrokes = 'https://www.ladbrokes.com.au/racing/bendigo/afa34ed6-0ce1-42f4-858f-c6a7b74618da'
-ladbrokes = 'https://www.ladbrokes.com.au/racing/capalaba/2df7bbaf-2b1d-438b-bab8-97e021cf8322'
+ladbrokes_website = 'https://www.ladbrokes.com.au/racing/bendigo/afa34ed6-0ce1-42f4-858f-c6a7b74618da'
+ladbrokes_website = 'https://www.ladbrokes.com.au/racing/capalaba/2df7bbaf-2b1d-438b-bab8-97e021cf8322'
+betfair_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198449105'
 
-scrape_odds_ladbrokes(ladbrokes)
+data_store = {}
+data_store_lock = threading.Lock()
+
+betfair_scraper = BetfairScraper(data_store, data_store_lock, 'betfair', betfair_website)
+betfair_thread = threading.Thread(target=betfair_scraper.setup_and_run)
+betfair_thread.start()
+
+while True:
+    print(data_store)
+    time.sleep(1)
