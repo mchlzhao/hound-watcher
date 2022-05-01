@@ -78,5 +78,3 @@ class BetfairScraper(Scraper):
 
         refresh_button = elem.find_element(by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')
         refresh_button.click()
-
-        time.sleep(1)
