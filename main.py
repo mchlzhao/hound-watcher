@@ -9,6 +9,7 @@ from tabulate import tabulate
 from ev_functions import bonus_back_if_place_but_no_win, double_winnings_in_bonus, no_promotion, BET_SIZE
 from scrapers.betfair import BetfairScraper
 from scrapers.ladbrokes import LadbrokesScraper
+from scrapers.palmerbet import PalmerbetScraper
 from scrapers.pointsbet import PointsbetScraper
 from scrapers.sportsbet import SportsbetScraper
 from scrapers.tab import TabScraper
@@ -57,6 +58,7 @@ name_to_scraper = {
     'betfair_3_place': BetfairScraper,
     'betfair_4_place': BetfairScraper,
     'ladbrokes': LadbrokesScraper,
+    'palmerbet': PalmerbetScraper,
     'pointsbet': PointsbetScraper,
     'sportsbet': SportsbetScraper,
     'tab': TabScraper,
@@ -88,6 +90,7 @@ while True:
 
 bookie_promos = {
     'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4), double_winnings_in_bonus],
+    'palmerbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
