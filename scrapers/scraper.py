@@ -23,6 +23,8 @@ class Scraper:
         self._driver.get(website)
         self.running = False
 
+        print(f'{scraper_name} driver ready')
+
     def loop(self):
         raise NotImplementedError()
 

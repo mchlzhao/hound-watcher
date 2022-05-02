@@ -23,13 +23,16 @@ def analyse_data(market_data, bookie_promotion_types):
     evs = {}
     for bookie_name, data in market_data.items():
         if 'betfair' in bookie_name:
+            print(f'{bookie_name}: {data["matched"]}')
             continue
 
         evs[bookie_name] = []
         for runner_name, runner_odds in data.items():
             betfair_odds = get_betfair_odds(market_data, runner_name)
             for i, promo_func in enumerate(bookie_promotion_types.get(bookie_name, [])):
-                evs[bookie_name].append((runner_name, i, runner_odds.back_odds, promo_func(runner_odds, betfair_odds)))
+                ev = promo_func(runner_odds, betfair_odds)
+                if ev is not None:
+                    evs[bookie_name].append((runner_name, i, runner_odds.back_odds, ev))
 
     return evs
 
@@ -45,39 +48,39 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 
 
-betfair_win_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198502627'
-betfair_place_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198502626'
-ladbrokes_website = 'https://www.ladbrokes.com.au/racing/taree/174b646b-5669-459c-a6db-409a507b035f'
-pointsbet_website = 'https://pointsbet.com.au/racing/Thoroughbred/AUS/Taree/race/22577825'
+name_to_scraper = {
+    'betfair_win': BetfairScraper,
+    'betfair_2_place': BetfairScraper,
+    'betfair_3_place': BetfairScraper,
+    'betfair_4_place': BetfairScraper,
+    'ladbrokes': LadbrokesScraper,
+    'pointsbet': PointsbetScraper,
+}
 
 data_store = {}
 data_store_lock = threading.Lock()
 scrapers = []
 threads = []
 
-scraper_info = [
-    ('betfair_win', betfair_win_website, BetfairScraper, True),
-    ('betfair_3_place', betfair_place_website, BetfairScraper, True),
-    ('ladbrokes', ladbrokes_website, LadbrokesScraper, True),
-    ('pointsbet', pointsbet_website, PointsbetScraper, True),
-]
-
-for name, website, scraper_class, headless, in scraper_info:
-    scraper = scraper_class(data_store, data_store_lock, name, website, headless)
+while True:
+    line = input()
+    if ' ' not in line:
+        break
+    name, website = map(lambda x: x.strip(), line.split(' '))
+    scraper = name_to_scraper[name](data_store, data_store_lock, name, website, True)
     scrapers.append(scraper)
     thread = threading.Thread(target=scraper.setup_and_run)
     thread.start()
     threads.append(thread)
 
 bookie_promos = {
-    'ladbrokes': [partial(bonus_back_if_place_but_no_win, 3), no_promotion],
-    'pointsbet': [partial(bonus_back_if_place_but_no_win, 3), no_promotion],
+    'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
+    'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
 
 while True:
     evs = analyse_data(data_store, bookie_promos)
-    print(data_store)
-    print('\n' * 10)
+    print()
     for key, val in evs.items():
         print(key)
         print(tabulate(sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1]),
