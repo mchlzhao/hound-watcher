@@ -15,6 +15,8 @@ class Scraper:
         self._scraper_name = scraper_name
 
         options = Options()
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
         options.headless = headless
         self._driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
 

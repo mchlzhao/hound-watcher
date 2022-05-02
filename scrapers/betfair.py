@@ -6,7 +6,9 @@ from selenium.common.exceptions import TimeoutException
 import os
 import time
 
+from odds_types import BackLay
 from scrapers.scraper import Scraper
+from util import process_name
 
 class BetfairScraper(Scraper):
     def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
@@ -38,17 +40,17 @@ class BetfairScraper(Scraper):
 
     def loop(self):
         try:
-            elems = WebDriverWait(self._driver, self._TIMEOUT).until(
-                EC.visibility_of_all_elements_located(
+            elem = WebDriverWait(self._driver, self._TIMEOUT).until(
+                EC.presence_of_element_located(
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
-            elem = elems[0]
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 
-        matched = int(elem
-            .find_element(by=By.XPATH, value='.//span[@class="total-matched"]')
+        matched = int(WebDriverWait(self._driver, self._TIMEOUT).until(
+            EC.presence_of_element_located(
+                (By.XPATH, './/span[@class="total-matched"]')))
             .text.split()[1].replace(',', ''))
 
         if matched > self.highest_matched:
@@ -60,7 +62,9 @@ class BetfairScraper(Scraper):
             runners = (elem
                 .find_elements(by=By.XPATH, value='.//tr[@class="runner-line"]'))
             for runner in runners:
-                runner_name = runner.find_element(by=By.XPATH, value='.//h3[contains(@class, "runner-name")]').text
+                runner_name = process_name(runner
+                    .find_element(by=By.XPATH, value='.//h3[contains(@class, "runner-name")]')
+                    .text)
                 def get_price(text):
                     val = (runner
                         .find_element(by=By.XPATH, value=f'.//td[contains(@class, "{text}-cell")]')
@@ -70,8 +74,8 @@ class BetfairScraper(Scraper):
                         return float(val)
                     except ValueError:
                         return None
-                data['markets'][runner_name] = (get_price('last-back'), get_price('first-lay'))
-            
+                data['markets'][runner_name] = BackLay(get_price('last-back'), get_price('first-lay'))
+
             self.update_data_store(data)
 
         refresh_button = elem.find_element(by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')

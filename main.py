@@ -1,30 +1,35 @@
+import math
 import signal
 import threading
 import time
 
+from functools import partial
 from tabulate import tabulate
 
+from ev_functions import bonus_back_if_place_but_no_win, no_promotion
 from scrapers.betfair import BetfairScraper
 from scrapers.ladbrokes import LadbrokesScraper
+from util import process_name
 
-def analyse_data(market_data, bonus_to_cash=0.75):
-    if 'betfair_win' not in market_data or 'betfair_place' not in market_data:
-        return {}
+def get_betfair_odds(market_data, name):
+    betfair_odds = {}
+    for bookie_name, data in market_data.items():
+        if 'betfair' in bookie_name:
+            betfair_odds[bookie_name] = data['markets'].get(process_name(name))
+    return betfair_odds
 
-    win_odds = market_data['betfair_win']['markets']
-    place_odds = market_data['betfair_place']['markets']
-
+def analyse_data(market_data, bookie_promotion_types):
     evs = {}
-    for key in market_data:
-        if key in ['betfair_win', 'betfair_place']:
+    for bookie_name, data in market_data.items():
+        if 'betfair' in bookie_name:
             continue
-        evs[key] = {}
-        for name, bid_ask in win_odds.items():
-            win_prob = 1 / (sum(bid_ask) / 2)
-            place_prob = 1 / (sum(place_odds[name]) / 2)
 
-            ev = win_prob * market_data[key][name] + (place_prob - win_prob) * bonus_to_cash - 1
-            evs[key][name] = ev
+        evs[bookie_name] = {}
+        for runner_name, runner_odds in data.items():
+            betfair_odds = get_betfair_odds(market_data, runner_name)
+            for i, promo_func in enumerate(bookie_promotion_types.get(bookie_name, [])):
+                evs[bookie_name][f'{runner_name} {i}'] = promo_func(runner_odds, betfair_odds)
+
     return evs
 
 def sigint_handler(signum, frame):
@@ -39,10 +44,9 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 
 
-# 18:29 mandurah r1
-betfair_win_website = 'https://www.betfair.com.au/exchange/plus/greyhound-racing/market/1.198503122?nodeId=31419158'
-betfair_place_website = 'https://www.betfair.com.au/exchange/plus/greyhound-racing/market/1.198503123?nodeId=31419158'
-ladbrokes_website = 'https://www.ladbrokes.com.au/racing/mandurah/e407b7fb-457a-4c70-935c-717fef4daab1'
+betfair_win_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198456732?nodeId=31416879'
+betfair_place_website = 'https://www.betfair.com.au/exchange/plus/horse-racing/market/1.198456737?nodeId=31416879'
+ladbrokes_website = 'https://www.ladbrokes.com.au/racing/newmarket-uk/c16d4cf0-00cd-4163-af40-99ecaf2df075'
 
 data_store = {}
 data_store_lock = threading.Lock()
@@ -51,8 +55,8 @@ threads = []
 
 scraper_info = [
     ('betfair_win', betfair_win_website, BetfairScraper, True),
-    ('betfair_place', betfair_place_website, BetfairScraper, True),
-    ('ladbrokes', ladbrokes_website, LadbrokesScraper, False)
+    ('betfair_3_place', betfair_place_website, BetfairScraper, True),
+    ('ladbrokes', ladbrokes_website, LadbrokesScraper, True)
 ]
 
 for name, website, scraper_class, headless, in scraper_info:
@@ -62,10 +66,15 @@ for name, website, scraper_class, headless, in scraper_info:
     thread.start()
     threads.append(thread)
 
+bookie_promos = {
+    'ladbrokes': [partial(bonus_back_if_place_but_no_win, 3), no_promotion]
+}
+
 while True:
-    evs = analyse_data(data_store, 0.75)
+    evs = analyse_data(data_store, bookie_promos)
+    print('\n' * 10)
     for key in evs:
-        print('\n' * 10)
         print(key)
-        print(tabulate(sorted(evs[key].items(), key=lambda x: -x[1]), headers=['Name', 'EV']))
+        print(tabulate(sorted(evs[key].items(), key=lambda x: math.inf if x[1] is None else -x[1]),
+            headers=['Name', 'EV'], tablefmt='orgtbl'))
     time.sleep(5)
