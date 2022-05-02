@@ -22,14 +22,14 @@ class PointsbetScraper(Scraper):
                 .find_element(by=By.XPATH, value='./div/div/div/div/span[not(child::*)]/..')
                 .text.split(' ')[1:-1])
 
-            win_odds_elem = runner_elem.find_elements(by=By.XPATH,
+            back_odds_elems = runner_elem.find_elements(by=By.XPATH,
                 value='.//button[contains(@data-test, "WinOddsButton")]')
-            if len(win_odds_elem) == 0:
-                win_price = None
+            if len(back_odds_elems) == 0:
+                back_odds = None
             else:
-                win_price = float(win_odds_elem[0]
+                back_odds = float(back_odds_elems[0]
                     .find_element(by=By.XPATH, value='./span/span/span')
                     .text)
 
-            data[name] = Back(win_price)
+            data[name] = Back(back_odds)
         self.update_data_store(data)

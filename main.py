@@ -11,6 +11,7 @@ from scrapers.betfair import BetfairScraper
 from scrapers.ladbrokes import LadbrokesScraper
 from scrapers.pointsbet import PointsbetScraper
 from scrapers.sportsbet import SportsbetScraper
+from scrapers.tab import TabScraper
 from util import process_name
 
 def get_betfair_odds(market_data, name):
@@ -58,6 +59,7 @@ name_to_scraper = {
     'ladbrokes': LadbrokesScraper,
     'pointsbet': PointsbetScraper,
     'sportsbet': SportsbetScraper,
+    'tab': TabScraper,
 }
 
 promo_index_to_name = [
@@ -88,6 +90,7 @@ bookie_promos = {
     'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4), double_winnings_in_bonus],
     'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
+    'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
 
 while True:
