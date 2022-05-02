@@ -48,10 +48,15 @@ class BetfairScraper(Scraper):
             self.teardown()
             return
 
-        matched = int(WebDriverWait(self._driver, self._TIMEOUT).until(
-            EC.presence_of_element_located(
-                (By.XPATH, './/span[@class="total-matched"]')))
-            .text.split()[1].replace(',', ''))
+        try:
+            matched = int(WebDriverWait(self._driver, self._TIMEOUT).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, './/span[@class="total-matched"]')))
+                .text.split()[1].replace(',', ''))
+        except TimeoutException:
+            print(f'Loading {self.scraper_name} took too much time!')
+            self.teardown()
+            return
 
         if matched > self.highest_matched:
             self.highest_matched = matched
