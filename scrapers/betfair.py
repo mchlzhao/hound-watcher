@@ -44,7 +44,7 @@ class BetfairScraper(Scraper):
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self._scraper_name} took too much time!')
             self.teardown()
             return
 
@@ -54,7 +54,7 @@ class BetfairScraper(Scraper):
                     (By.XPATH, './/span[@class="total-matched"]')))
                 .text.split()[1].replace(',', ''))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self._scraper_name} took too much time!')
             self.teardown()
             return
 

@@ -34,7 +34,5 @@ class SportsbetScraper(Scraper):
             else:
                 win_price = float(win_odds_elem[0].text)
             
-            print(f'SPORTSBET {name} {win_price}')
-
             data[name] = Back(win_price)
-        # self.update_data_store(data)
+        self.update_data_store(data)
