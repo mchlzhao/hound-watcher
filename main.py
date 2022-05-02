@@ -96,11 +96,18 @@ bookie_promos = {
     'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
 
+MAX_ROWS = 10
+
 while True:
     evs = analyse_data(data_store, bookie_promos)
     print()
     for key, val in evs.items():
         print(key)
-        print(tabulate(sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1]),
-            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet'], tablefmt='orgtbl'))
+        print_list = sorted(filter(lambda x: x[-1] > 0, val), key=lambda x: math.inf if x[-1] is None else -x[-1])
+        if len(print_list) > MAX_ROWS:
+            print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
+        else:
+            print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
+        print(tabulate(print_list, tablefmt='orgtbl',
+            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
     time.sleep(5)
