@@ -9,11 +9,11 @@ from scrapers.scraper import Scraper
 class SportsbetScraper(Scraper):
     def loop(self):
         try:
-            runner_elems = WebDriverWait(self._driver, self._TIMEOUT).until(
+            runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, ('//div[@data-automation-id="racecard-body"]'
                      '/div[contains(@data-automation-id, "racecard-outcome")]'))))
         except TimeoutException:
-            print(f'Loading {self._scraper_name} took too much time!')
+            print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 

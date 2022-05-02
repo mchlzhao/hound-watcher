@@ -9,10 +9,10 @@ from scrapers.scraper import Scraper
 class PointsbetScraper(Scraper):
     def loop(self):
         try:
-            runner_elems = WebDriverWait(self._driver, self._TIMEOUT).until(
+            runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, '//div[contains(@data-test, "OutcomeButtonDiv")]')))
         except TimeoutException:
-            print(f'Loading {self._scraper_name} took too much time!')
+            print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 

@@ -7,20 +7,20 @@ from config import WEBDRIVER_PATH
 
 class Scraper:
     def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
-        self._LOOP_PERIOD = 1
-        self._TIMEOUT = 10
+        self.LOOP_PERIOD = 1
+        self.TIMEOUT = 10
 
-        self._data_store = data_store
-        self._data_store_lock = data_store_lock
-        self._scraper_name = scraper_name
+        self.data_store = data_store
+        self.data_store_lock = data_store_lock
+        self.scraper_name = scraper_name
 
         options = Options()
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
         options.headless = headless
-        self._driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
+        self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
 
-        self._driver.get(website)
+        self.driver.get(website)
         self.running = False
 
         print(f'{scraper_name} driver ready')
@@ -32,7 +32,7 @@ class Scraper:
         self.running = True
         while self.running:
             self.loop()
-            time.sleep(self._LOOP_PERIOD)
+            time.sleep(self.LOOP_PERIOD)
         self.teardown()
 
     def setup(self):
@@ -44,9 +44,9 @@ class Scraper:
 
     def teardown(self):
         self.running = False
-        self._driver.close()
+        self.driver.close()
 
     def update_data_store(self, data):
-        self._data_store_lock.acquire()
-        self._data_store[self._scraper_name] = data
-        self._data_store_lock.release()
+        self.data_store_lock.acquire()
+        self.data_store[self.scraper_name] = data
+        self.data_store_lock.release()

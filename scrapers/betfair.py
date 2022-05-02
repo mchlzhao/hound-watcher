@@ -18,11 +18,11 @@ class BetfairScraper(Scraper):
 
     def setup(self):
         try:
-            elems = (WebDriverWait(self._driver, self._TIMEOUT)
+            elems = (WebDriverWait(self.driver, self.TIMEOUT)
                 .until(EC.visibility_of_all_elements_located((By.XPATH, '//form[@class="ssc-lif"]'))))
             elem = elems[0]
         except TimeoutException:
-            print(f'Loading {self._scraper_name} took too much time!')
+            print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 
@@ -40,21 +40,21 @@ class BetfairScraper(Scraper):
 
     def loop(self):
         try:
-            elem = WebDriverWait(self._driver, self._TIMEOUT).until(
+            elem = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
         except TimeoutException:
-            print(f'Loading {self._scraper_name} took too much time!')
+            print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 
         try:
-            matched = int(WebDriverWait(self._driver, self._TIMEOUT).until(
+            matched = int(WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.presence_of_element_located(
                     (By.XPATH, './/span[@class="total-matched"]')))
                 .text.split()[1].replace(',', ''))
         except TimeoutException:
-            print(f'Loading {self._scraper_name} took too much time!')
+            print(f'Loading {self.scraper_name} took too much time!')
             self.teardown()
             return
 
