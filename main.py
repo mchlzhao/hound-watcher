@@ -10,6 +10,7 @@ from ev_functions import bonus_back_if_place_but_no_win, no_promotion
 from scrapers.betfair import BetfairScraper
 from scrapers.ladbrokes import LadbrokesScraper
 from scrapers.pointsbet import PointsbetScraper
+from scrapers.sportsbet import SportsbetScraper
 from util import process_name
 
 def get_betfair_odds(market_data, name):
@@ -55,6 +56,7 @@ name_to_scraper = {
     'betfair_4_place': BetfairScraper,
     'ladbrokes': LadbrokesScraper,
     'pointsbet': PointsbetScraper,
+    'sportsbet': SportsbetScraper,
 }
 
 data_store = {}

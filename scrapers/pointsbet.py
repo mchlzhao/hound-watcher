@@ -17,12 +17,12 @@ class PointsbetScraper(Scraper):
             return
 
         data = {}
-        for row_elem in runner_elems:
-            name = ' '.join(row_elem
+        for runner_elem in runner_elems:
+            name = ' '.join(runner_elem
                 .find_element(by=By.XPATH, value='./div/div/div/div/span[not(child::*)]/..')
                 .text.split(' ')[1:-1])
 
-            win_odds_elem = row_elem.find_elements(by=By.XPATH,
+            win_odds_elem = runner_elem.find_elements(by=By.XPATH,
                 value='.//button[contains(@data-test, "WinOddsButton")]')
             if len(win_odds_elem) == 0:
                 win_price = None
