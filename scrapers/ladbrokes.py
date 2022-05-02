@@ -25,11 +25,11 @@ class LadbrokesScraper(Scraper):
 
             fixed_odds_elem = row_elem.find_elements(by=By.XPATH, value='.//td[contains(@class, "runner-fixed-odds")]')
             if len(fixed_odds_elem) == 0:
-                win_price = None
+                back_odds = None
             else:
-                win_price = float(fixed_odds_elem[0]
+                back_odds = float(fixed_odds_elem[0]
                     .find_element(by=By.XPATH, value='.//span[@data-testid="price-button-odds"]')
                     .text)
             
-            data[name] = Back(win_price)
+            data[name] = Back(back_odds)
         self.update_data_store(data)
