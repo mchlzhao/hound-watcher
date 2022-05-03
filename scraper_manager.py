@@ -42,8 +42,8 @@ class ScraperManager:
             return
         
         stop_event = threading.Event()
-        scraper = scraper_class(self.data_store, self.data_store_lock, name, url, stop_event, True)
-        thread = threading.Thread(target=scraper.setup_and_run)
+        scraper = scraper_class(self.data_store, self.data_store_lock, name, url, True)
+        thread = threading.Thread(target=scraper.setup_and_run, args=(stop_event,))
         thread.start()
         self.threads_by_name[name] = (thread, stop_event)
     
@@ -52,11 +52,17 @@ class ScraperManager:
             print(f'no running thread with {name=}')
             return
         
+        print(f'stopping {name}')
         thread, stop_event = self.threads_by_name.pop(name)
+        print(f'setting stop event {name}')
         stop_event.set()
+        print(f'stop event set, waiting to join {name}')
         thread.join()
+        print(f'thread joined {name}')
     
     def stop_all(self):
+        print('called stop all')
         names = list(self.threads_by_name.keys())
         for name in names:
+            print(f'calling stop {name}')
             self.stop(name)

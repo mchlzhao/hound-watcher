@@ -39,6 +39,7 @@ def sigint_handler(signum, frame):
     print('HANDLE SIGINT!')
     global scraper_manager
     scraper_manager.stop_all()
+    time.sleep(5)
     exit(0)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -74,7 +75,7 @@ bookie_promos = {
 
 MAX_ROWS = 10
 
-while True:
+for i in range(2):
     evs = analyse_data(data_store, bookie_promos)
     print()
     for key, val in evs.items():
@@ -87,3 +88,7 @@ while True:
         print(tabulate(print_list, tablefmt='orgtbl',
             headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
     time.sleep(5)
+
+print('done loop, closing all')
+scraper_manager.stop_all()
+print('done stop all')

@@ -8,6 +8,7 @@ from scrapers.scraper import Scraper
 
 class SportsbetScraper(Scraper):
     def loop(self):
+        print(f'{self.scraper_name} in loop')
         try:
             runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, ('//div[@data-automation-id="racecard-body"]'
@@ -36,3 +37,4 @@ class SportsbetScraper(Scraper):
             
             data[name] = Back(back_odds)
         self.update_data_store(data)
+        print(f'{self.scraper_name} out of loop')
