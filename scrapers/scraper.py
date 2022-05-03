@@ -6,7 +6,7 @@ import time
 from config import WEBDRIVER_PATH
 
 class Scraper:
-    def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
+    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True):
         self.LOOP_PERIOD = 1
         self.TIMEOUT = 10
 
@@ -20,7 +20,7 @@ class Scraper:
         options.headless = headless
         self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
 
-        self.driver.get(website)
+        self.driver.get(url)
         self.running = False
 
         print(f'{scraper_name} driver ready')

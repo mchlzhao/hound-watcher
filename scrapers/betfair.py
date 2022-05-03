@@ -11,8 +11,8 @@ from scrapers.scraper import Scraper
 from util import process_name
 
 class BetfairScraper(Scraper):
-    def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
-        super().__init__(data_store, data_store_lock, scraper_name, website, headless)
+    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True):
+        super().__init__(data_store, data_store_lock, scraper_name, url, headless)
 
         self.highest_matched = -1
 

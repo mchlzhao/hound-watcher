@@ -83,8 +83,8 @@ while True:
     line = input()
     if ' ' not in line:
         break
-    name, website = map(lambda x: x.strip(), line.split(' '))
-    scraper = name_to_scraper[name](data_store, data_store_lock, name, website, True)
+    name, url = map(lambda x: x.strip(), line.split(' '))
+    scraper = name_to_scraper[name](data_store, data_store_lock, name, url, True)
     scrapers.append(scraper)
     thread = threading.Thread(target=scraper.setup_and_run)
     thread.start()
