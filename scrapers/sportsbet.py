@@ -14,7 +14,7 @@ class SportsbetScraper(Scraper):
                      '/div[contains(@data-automation-id, "racecard-outcome")]'))))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         data = {}

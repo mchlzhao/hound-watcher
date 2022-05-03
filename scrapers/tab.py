@@ -19,7 +19,7 @@ class TabScraper(Scraper):
                 EC.presence_of_element_located((By.XPATH, '//div[@data-testid="login-modal"]')))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
         
         (login_elem
@@ -43,7 +43,7 @@ class TabScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH, '//div[@class="pseudo-body"]/div[@class="row"]')))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         data = {}
