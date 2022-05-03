@@ -58,7 +58,10 @@ class TabScraper(Scraper):
             if len(back_odds_elems) == 0:
                 back_odds = None
             else:
-                back_odds = float(back_odds_elems[0].text)
+                try:
+                    back_odds = float(back_odds_elems[0].text)
+                except:
+                    back_odds = None
 
             data[name] = Back(back_odds)
         self.update_data_store(data)

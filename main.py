@@ -8,6 +8,7 @@ from tabulate import tabulate
 
 from ev_functions import bonus_back_if_place_but_no_win, double_winnings_in_bonus, no_promotion, BET_SIZE
 from scrapers.betfair import BetfairScraper
+from scrapers.bluebet import BluebetScraper
 from scrapers.ladbrokes import LadbrokesScraper
 from scrapers.palmerbet import PalmerbetScraper
 from scrapers.pointsbet import PointsbetScraper
@@ -54,6 +55,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 name_to_scraper = {
     'betfair_win': BetfairScraper,
+    'bluebet': BluebetScraper,
     'betfair_2_place': BetfairScraper,
     'betfair_3_place': BetfairScraper,
     'betfair_4_place': BetfairScraper,
@@ -89,9 +91,10 @@ while True:
     threads.append(thread)
 
 bookie_promos = {
+    'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4), double_winnings_in_bonus],
-    'palmerbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-    'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
+    'palmerbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 3)],
+    'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 4)],
     'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
@@ -103,7 +106,7 @@ while True:
     print()
     for key, val in evs.items():
         print(key)
-        print_list = sorted(filter(lambda x: x[-1] > 0, val), key=lambda x: math.inf if x[-1] is None else -x[-1])
+        print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
         if len(print_list) > MAX_ROWS:
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
