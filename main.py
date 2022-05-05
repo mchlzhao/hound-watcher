@@ -1,6 +1,5 @@
 import math
 import signal
-import threading
 import time
 
 from functools import partial
