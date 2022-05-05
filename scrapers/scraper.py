@@ -36,12 +36,9 @@ class Scraper(threading.Thread):
     def run(self):
         self.setup()
         while not self.stop_event.is_set():
-            print(f'{self.scraper_name} looping')
             self.loop()
             time.sleep(self.LOOP_PERIOD)
-        print(f'{self.scraper_name} is shutting down teardown')
         self.driver.close()
-        print(f'{self.scraper_name} teardown complete')
     
     def stop(self):
         self.stop_event.set()

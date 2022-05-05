@@ -50,17 +50,11 @@ class ScraperManager:
             print(f'no running thread with {name=}')
             return
         
-        print(f'stopping {name}')
         thread = self.threads_by_name.pop(name)
-        print(f'setting stop event {name}')
         thread.stop()
-        print(f'stop event set, waiting to join {name}')
         thread.join()
-        print(f'thread joined {name}')
     
     def stop_all(self):
-        print('called stop all')
         names = list(self.threads_by_name.keys())
         for name in names:
-            print(f'calling stop {name}')
             self.stop(name)

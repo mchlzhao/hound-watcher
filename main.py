@@ -88,6 +88,4 @@ for i in range(2):
             headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
     time.sleep(5)
 
-print('done loop, closing all')
 scraper_manager.stop_all()
-print('done stop all')
