@@ -15,7 +15,7 @@ class BluebetScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH, '//div/a/div[contains(@class, "null")]')))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         data = {}

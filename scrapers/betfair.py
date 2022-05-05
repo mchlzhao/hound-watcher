@@ -11,8 +11,8 @@ from scrapers.scraper import Scraper
 from util import process_name
 
 class BetfairScraper(Scraper):
-    def __init__(self, data_store, data_store_lock, scraper_name, website, headless=True):
-        super().__init__(data_store, data_store_lock, scraper_name, website, headless)
+    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True):
+        super().__init__(data_store, data_store_lock, scraper_name, url, headless)
 
         self.highest_matched = -1
 
@@ -23,7 +23,7 @@ class BetfairScraper(Scraper):
             elem = elems[0]
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         (elem
@@ -45,7 +45,7 @@ class BetfairScraper(Scraper):
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         try:
@@ -55,7 +55,7 @@ class BetfairScraper(Scraper):
                 .text.split()[1].replace(',', ''))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         if matched > self.highest_matched:

@@ -15,7 +15,7 @@ class PalmerbetScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH, '//tr/app-race-runner/div[not(contains(@class, "scratched"))]')))
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         data = {}

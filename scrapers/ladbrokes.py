@@ -14,7 +14,7 @@ class LadbrokesScraper(Scraper):
             elem = elems[0]
         except TimeoutException:
             print(f'Loading {self.scraper_name} took too much time!')
-            self.teardown()
+            self.stop()
             return
 
         data = {}

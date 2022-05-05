@@ -1,19 +1,12 @@
 import math
 import signal
-import threading
 import time
 
 from functools import partial
 from tabulate import tabulate
 
 from ev_functions import bonus_back_if_place_but_no_win, double_winnings_in_bonus, no_promotion, BET_SIZE
-from scrapers.betfair import BetfairScraper
-from scrapers.bluebet import BluebetScraper
-from scrapers.ladbrokes import LadbrokesScraper
-from scrapers.palmerbet import PalmerbetScraper
-from scrapers.pointsbet import PointsbetScraper
-from scrapers.sportsbet import SportsbetScraper
-from scrapers.tab import TabScraper
+from scraper_manager import ScraperManager
 from util import process_name
 
 def get_betfair_odds(market_data, name):
@@ -43,28 +36,14 @@ def analyse_data(market_data, bookie_promotion_types):
 
 def sigint_handler(signum, frame):
     print('HANDLE SIGINT!')
-    for scraper in scrapers:
-        scraper.running = False
-    for thread in threads:
-        thread.join()
+    global scraper_manager
+    scraper_manager.stop_all()
+    time.sleep(5)
     exit(0)
 
 signal.signal(signal.SIGINT, sigint_handler)
 
 
-
-name_to_scraper = {
-    'betfair_win': BetfairScraper,
-    'bluebet': BluebetScraper,
-    'betfair_2_place': BetfairScraper,
-    'betfair_3_place': BetfairScraper,
-    'betfair_4_place': BetfairScraper,
-    'ladbrokes': LadbrokesScraper,
-    'palmerbet': PalmerbetScraper,
-    'pointsbet': PointsbetScraper,
-    'sportsbet': SportsbetScraper,
-    'tab': TabScraper,
-}
 
 promo_index_to_name = [
     'NO PROMO',
@@ -75,20 +54,14 @@ promo_index_to_name = [
 ]
 
 data_store = {}
-data_store_lock = threading.Lock()
-scrapers = []
-threads = []
+scraper_manager = ScraperManager(data_store)
 
 while True:
     line = input()
     if ' ' not in line:
         break
-    name, website = map(lambda x: x.strip(), line.split(' '))
-    scraper = name_to_scraper[name](data_store, data_store_lock, name, website, True)
-    scrapers.append(scraper)
-    thread = threading.Thread(target=scraper.setup_and_run)
-    thread.start()
-    threads.append(thread)
+    name, url = map(lambda x: x.strip(), line.split(' '))
+    scraper_manager.start(name, url)
 
 bookie_promos = {
     'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
@@ -101,7 +74,7 @@ bookie_promos = {
 
 MAX_ROWS = 10
 
-while True:
+for i in range(2):
     evs = analyse_data(data_store, bookie_promos)
     print()
     for key, val in evs.items():
@@ -114,3 +87,5 @@ while True:
         print(tabulate(print_list, tablefmt='orgtbl',
             headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
     time.sleep(5)
+
+scraper_manager.stop_all()
