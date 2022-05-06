@@ -7,7 +7,8 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class LadbrokesScraper(Scraper):
-    name = 'ladbrokes'
+    def get_name(self):
+        return 'ladbrokes'
 
     def loop(self):
         try:
@@ -34,4 +35,4 @@ class LadbrokesScraper(Scraper):
                     .text)
             
             data[name] = Back(back_odds)
-        self.update_data_store(data, LadbrokesScraper.name)
+        self.update_data_store(data, self.name)

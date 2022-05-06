@@ -25,6 +25,9 @@ class Scraper(threading.Thread):
         self.driver.get(url)
 
         print(f'{url} driver ready')
+    
+    def get_name(self):
+        raise NotImplementedError()
 
     def loop(self):
         raise NotImplementedError()
@@ -42,6 +45,6 @@ class Scraper(threading.Thread):
     def stop(self):
         self.stop_event.set()
 
-    def update_data_store(self, data, name):
+    def update_data_store(self, data):
         with self.data_store_lock:
-            self.data_store[name] = data
+            self.data_store[self.get_name()] = data

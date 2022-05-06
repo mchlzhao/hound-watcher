@@ -9,7 +9,8 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class PalmerbetScraper(Scraper):
-    name = 'palmerbet'
+    def get_name(self):
+        return 'palmerbet'
 
     def loop(self):
         try:
@@ -38,4 +39,4 @@ class PalmerbetScraper(Scraper):
                 back_odds = float(back_odds_elems[0].text)
 
             data[name] = Back(back_odds)
-        self.update_data_store(data, PalmerbetScraper.name)
+        self.update_data_store(data, self.name)

@@ -38,7 +38,6 @@ def sigint_handler(signum, frame):
     print('HANDLE SIGINT!')
     global scraper_manager
     scraper_manager.stop_all()
-    time.sleep(5)
     exit(0)
 
 signal.signal(signal.SIGINT, sigint_handler)
