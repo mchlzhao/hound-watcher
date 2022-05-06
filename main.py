@@ -1,7 +1,5 @@
 import math
 import signal
-import threading
-import time
 
 from functools import partial
 from tabulate import tabulate
@@ -22,7 +20,6 @@ def analyse_data(market_data, bookie_promotion_types):
     evs = {}
     for bookie_name, data in market_data.items():
         if 'betfair' in bookie_name:
-            print(f'{bookie_name}: {data["matched"]}')
             continue
 
         evs[bookie_name] = []
@@ -42,6 +39,7 @@ def loop():
     global MAX_ROWS
     global data_store
     global bookie_promos
+    global matched_box
     evs = analyse_data(data_store, bookie_promos)
     text_box_text = ''
     for key, val in evs.items():
@@ -56,10 +54,17 @@ def loop():
     global text_box
     text_box.delete('1.0', tk.END)
     text_box.insert(tk.END, text_box_text)
+
+    matched_box_text = ''
+    for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place', 'betfair_4_place']:
+        if market in data_store and 'matched' in data_store[market]:
+            matched_box_text += f'{market}: {data_store[market]["matched"]}\n'
+    matched_box.delete('1.0', tk.END)
+    matched_box.insert(tk.END, matched_box_text)
+
     window.after(5000, loop)
 
 def sigint_handler(signum, frame):
-    print('HANDLE SIGINT!')
     global scraper_manager
     scraper_manager.stop_all()
     exit(0)
@@ -109,7 +114,10 @@ def on_destroy_thread_button_press(label, button):
 
 window = tk.Tk()
 
-text_box = tk.Text(master=window, height=50, width=100)
+matched_box = tk.Text(master=window, height=2, width=20)
+matched_box.pack()
+
+text_box = tk.Text(master=window, height=20, width=100, font=('courier new', 20))
 text_box.pack()
 
 url_entry = tk.Entry(master=window, width=50)
