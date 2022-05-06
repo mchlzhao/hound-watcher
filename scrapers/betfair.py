@@ -97,7 +97,7 @@ class BetfairScraper(Scraper):
                         return None
                 data['markets'][runner_name] = BackLay(get_price('last-back'), get_price('first-lay'))
 
-            self.update_data_store(data, self.name)
+            self.update_data_store(data)
 
         refresh_button = elem.find_element(by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')
         refresh_button.click()
