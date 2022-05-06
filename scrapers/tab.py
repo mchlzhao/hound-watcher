@@ -10,6 +10,8 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class TabScraper(Scraper):
+    name = 'tab'
+
     def setup(self):
         self.driver.find_element(by=By.XPATH, value='.//button[@data-testid="header-login"]').click()
 
@@ -64,4 +66,4 @@ class TabScraper(Scraper):
                     back_odds = None
 
             data[name] = Back(back_odds)
-        self.update_data_store(data)
+        self.update_data_store(data, TabScraper.name)

@@ -11,8 +11,10 @@ from scrapers.scraper import Scraper
 from util import process_name
 
 class BetfairScraper(Scraper):
-    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True):
-        super().__init__(data_store, data_store_lock, scraper_name, url, headless)
+    name = 'betfair'
+
+    def __init__(self, data_store, data_store_lock, url, headless=True):
+        super().__init__(data_store, data_store_lock, url, headless)
 
         self.highest_matched = -1
 
@@ -81,7 +83,7 @@ class BetfairScraper(Scraper):
                         return None
                 data['markets'][runner_name] = BackLay(get_price('last-back'), get_price('first-lay'))
 
-            self.update_data_store(data)
+            self.update_data_store(data, BetfairScraper.name)
 
         refresh_button = elem.find_element(by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')
         refresh_button.click()

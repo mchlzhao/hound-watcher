@@ -61,7 +61,7 @@ while True:
     if ' ' not in line:
         break
     name, url = map(lambda x: x.strip(), line.split(' '))
-    scraper_manager.start(name, url)
+    scraper_manager.start(url)
 
 bookie_promos = {
     'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],

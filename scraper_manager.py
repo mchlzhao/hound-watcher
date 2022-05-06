@@ -12,7 +12,7 @@ class ScraperManager:
     def __init__(self, data_store):
         self.data_store = data_store
         self.data_store_lock = threading.Lock()
-        self.threads_by_name = {}
+        self.threads_by_url = {}
     
     @staticmethod
     def url_to_scraper_class(url):
@@ -32,29 +32,29 @@ class ScraperManager:
             return TabScraper
         return None
     
-    def start(self, name, url):
+    def start(self, url):
         scraper_class = ScraperManager.url_to_scraper_class(url)
         if scraper_class is None:
             print(f'don\'t know how to scrape {url=}')
             return
-        if name in self.threads_by_name:
-            print(f'{name=} already in use')
+        if url in self.threads_by_url:
+            print(f'{url=} already being scraped')
             return
         
-        thread = scraper_class(self.data_store, self.data_store_lock, name, url, True)
+        thread = scraper_class(self.data_store, self.data_store_lock, url)
         thread.start()
-        self.threads_by_name[name] = thread
+        self.threads_by_url[url] = thread
     
-    def stop(self, name):
-        if name not in self.threads_by_name:
-            print(f'no running thread with {name=}')
+    def stop(self, url):
+        if url not in self.threads_by_url:
+            print(f'no running thread with {url=}')
             return
         
-        thread = self.threads_by_name.pop(name)
+        thread = self.threads_by_url.pop(url)
         thread.stop()
         thread.join()
     
     def stop_all(self):
-        names = list(self.threads_by_name.keys())
+        names = list(self.threads_by_url.keys())
         for name in names:
             self.stop(name)
