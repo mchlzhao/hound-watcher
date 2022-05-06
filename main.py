@@ -1,5 +1,6 @@
 import math
 import signal
+import threading
 import time
 
 from functools import partial
@@ -34,16 +35,21 @@ def analyse_data(market_data, bookie_promotion_types):
 
     return evs
 
-def sigint_handler(signum, frame):
-    print('HANDLE SIGINT!')
-    global scraper_manager
-    scraper_manager.stop_all()
-    time.sleep(5)
-    exit(0)
-
-signal.signal(signal.SIGINT, sigint_handler)
-
-
+def loop(data_store, bookie_promos):
+    MAX_ROWS = 10
+    while True:
+        evs = analyse_data(data_store, bookie_promos)
+        print()
+        for key, val in evs.items():
+            print(key)
+            print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
+            if len(print_list) > MAX_ROWS:
+                print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
+            else:
+                print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
+            print(tabulate(print_list, tablefmt='orgtbl',
+                headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
+        time.sleep(5)
 
 promo_index_to_name = [
     'NO PROMO',
@@ -52,16 +58,6 @@ promo_index_to_name = [
     'BONUS BACK IF 2ND-4TH',
     'DOUBLE WINNINGS BONUS',
 ]
-
-data_store = {}
-scraper_manager = ScraperManager(data_store)
-
-while True:
-    line = input()
-    if ' ' not in line:
-        break
-    name, url = map(lambda x: x.strip(), line.split(' '))
-    scraper_manager.start(name, url)
 
 bookie_promos = {
     'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
@@ -72,20 +68,42 @@ bookie_promos = {
     'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
 
-MAX_ROWS = 10
+def sigint_handler(signum, frame):
+    print('HANDLE SIGINT!')
+    global scraper_manager
+    scraper_manager.stop_all()
+    exit(0)
 
-for i in range(2):
-    evs = analyse_data(data_store, bookie_promos)
-    print()
-    for key, val in evs.items():
-        print(key)
-        print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
-        if len(print_list) > MAX_ROWS:
-            print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
-        else:
-            print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
-        print(tabulate(print_list, tablefmt='orgtbl',
-            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
-    time.sleep(5)
+signal.signal(signal.SIGINT, sigint_handler)
 
-scraper_manager.stop_all()
+data_store = {}
+scraper_manager = ScraperManager(data_store)
+
+loop_thread = threading.Thread(target=loop, args=(data_store, bookie_promos))
+loop_thread.start()
+
+import tkinter as tk
+
+def on_create_thread_button_pressed():
+    global url_entry
+    global window
+    url = url_entry.get()
+    url_label = tk.Label(master=window, text=url)
+    destroy_button = tk.Button(master=window, text='Stop')
+    destroy_button.config(command=partial(on_destroy_thread_button_press, label=url_label, button=destroy_button))
+    url_entry.delete(0, tk.END)
+    url_label.pack()
+    destroy_button.pack()
+    scraper_manager.start(url, url)
+
+def on_destroy_thread_button_press(label, button):
+    label.destroy()
+    button.destroy()
+
+window = tk.Tk()
+url_entry = tk.Entry(master=window, width=50)
+create_thread_button = tk.Button(master=window, command=on_create_thread_button_pressed, text='Scrape')
+url_entry.pack()
+create_thread_button.pack()
+
+window.mainloop()
