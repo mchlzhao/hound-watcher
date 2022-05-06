@@ -95,7 +95,7 @@ scraper_manager = ScraperManager(data_store)
 
 import tkinter as tk
 
-def on_create_thread_button_pressed():
+def on_create_thread_button_pressed(*args):
     global url_entry
     global window
     url = url_entry.get()
@@ -123,6 +123,7 @@ text_box.pack()
 url_entry = tk.Entry(master=window, width=50)
 url_entry.pack()
 
+window.bind('<Return>', on_create_thread_button_pressed)
 create_thread_button = tk.Button(master=window, command=on_create_thread_button_pressed, text='Scrape')
 create_thread_button.pack()
 
