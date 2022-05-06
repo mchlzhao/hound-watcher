@@ -39,4 +39,4 @@ class PalmerbetScraper(Scraper):
                 back_odds = float(back_odds_elems[0].text)
 
             data[name] = Back(back_odds)
-        self.update_data_store(data, self.name)
+        self.update_data_store(data)
