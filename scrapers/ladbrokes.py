@@ -25,9 +25,6 @@ class LadbrokesScraper(Scraper):
             name = (row_elem
                 .find_element(by=By.XPATH, value='.//span[@class="runner-name"]')
                 .text)
-            # ladbrokes sometimes appends ' Nz' to the name of a runner
-            if name[-3:].lower() == ' nz':
-                name = name[:-3]
 
             fixed_odds_elem = row_elem.find_elements(by=By.XPATH, value='.//td[contains(@class, "runner-fixed-odds")]')
             if len(fixed_odds_elem) == 0:
