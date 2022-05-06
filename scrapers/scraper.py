@@ -40,6 +40,8 @@ class Scraper(threading.Thread):
         while not self.stop_event.is_set():
             self.loop()
             time.sleep(self.LOOP_PERIOD)
+        with self.data_store_lock:
+            self.data_store.pop(self.get_name())
         self.driver.close()
     
     def stop(self):
