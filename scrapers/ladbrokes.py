@@ -16,7 +16,7 @@ class LadbrokesScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH, '//table[contains(@class, "race-table")]')))
             elem = elems[0]
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 

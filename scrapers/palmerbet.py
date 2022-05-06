@@ -17,7 +17,7 @@ class PalmerbetScraper(Scraper):
             runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, '//tr/app-race-runner/div[not(contains(@class, "scratched"))]')))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 

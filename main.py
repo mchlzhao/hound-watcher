@@ -35,21 +35,28 @@ def analyse_data(market_data, bookie_promotion_types):
 
     return evs
 
-def loop(data_store, bookie_promos):
-    MAX_ROWS = 10
-    while True:
-        evs = analyse_data(data_store, bookie_promos)
-        print()
-        for key, val in evs.items():
-            print(key)
-            print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
-            if len(print_list) > MAX_ROWS:
-                print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
-            else:
-                print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
-            print(tabulate(print_list, tablefmt='orgtbl',
-                headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
-        time.sleep(5)
+MAX_ROWS = 10
+
+def loop():
+    global window
+    global MAX_ROWS
+    global data_store
+    global bookie_promos
+    evs = analyse_data(data_store, bookie_promos)
+    text_box_text = ''
+    for key, val in evs.items():
+        text_box_text += key + '\n'
+        print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
+        if len(print_list) > MAX_ROWS:
+            print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
+        else:
+            print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
+        text_box_text += (tabulate(print_list, tablefmt='orgtbl',
+            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
+    global text_box
+    text_box.delete('1.0', tk.END)
+    text_box.insert(tk.END, text_box_text)
+    window.after(5000, loop)
 
 def sigint_handler(signum, frame):
     print('HANDLE SIGINT!')
@@ -81,9 +88,6 @@ bookie_promos = {
 data_store = {}
 scraper_manager = ScraperManager(data_store)
 
-loop_thread = threading.Thread(target=loop, args=(data_store, bookie_promos))
-loop_thread.start()
-
 import tkinter as tk
 
 def on_create_thread_button_pressed():
@@ -104,9 +108,24 @@ def on_destroy_thread_button_press(label, button):
     button.destroy()
 
 window = tk.Tk()
+
+text_box = tk.Text(master=window, height=50, width=100)
+text_box.pack()
+
 url_entry = tk.Entry(master=window, width=50)
-create_thread_button = tk.Button(master=window, command=on_create_thread_button_pressed, text='Scrape')
 url_entry.pack()
+
+create_thread_button = tk.Button(master=window, command=on_create_thread_button_pressed, text='Scrape')
 create_thread_button.pack()
+
+loop()
+
+def clean_up():
+    global window
+    global scraper_manager
+    scraper_manager.stop_all()
+    window.destroy()
+
+window.protocol("WM_DELETE_WINDOW", clean_up)
 
 window.mainloop()
