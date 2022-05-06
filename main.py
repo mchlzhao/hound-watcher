@@ -51,6 +51,16 @@ def loop(data_store, bookie_promos):
                 headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
         time.sleep(5)
 
+def sigint_handler(signum, frame):
+    print('HANDLE SIGINT!')
+    global scraper_manager
+    scraper_manager.stop_all()
+    exit(0)
+
+signal.signal(signal.SIGINT, sigint_handler)
+
+
+
 promo_index_to_name = [
     'NO PROMO',
     'BONUS BACK IF 2ND',
@@ -67,14 +77,6 @@ bookie_promos = {
     'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
     'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
 }
-
-def sigint_handler(signum, frame):
-    print('HANDLE SIGINT!')
-    global scraper_manager
-    scraper_manager.stop_all()
-    exit(0)
-
-signal.signal(signal.SIGINT, sigint_handler)
 
 data_store = {}
 scraper_manager = ScraperManager(data_store)
@@ -94,9 +96,10 @@ def on_create_thread_button_pressed():
     url_entry.delete(0, tk.END)
     url_label.pack()
     destroy_button.pack()
-    scraper_manager.start(url, url)
+    scraper_manager.start(url)
 
 def on_destroy_thread_button_press(label, button):
+    scraper_manager.stop(label['text'])
     label.destroy()
     button.destroy()
 

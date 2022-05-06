@@ -7,6 +7,9 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class LadbrokesScraper(Scraper):
+    def get_name(self):
+        return 'ladbrokes'
+
     def loop(self):
         try:
             elems = WebDriverWait(self.driver, self.TIMEOUT).until(
@@ -32,4 +35,4 @@ class LadbrokesScraper(Scraper):
                     .text)
             
             data[name] = Back(back_odds)
-        self.update_data_store(data)
+        self.update_data_store(data, self.name)

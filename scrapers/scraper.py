@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from config import WEBDRIVER_PATH
 
 class Scraper(threading.Thread):
-    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True, *args, **kwargs):
+    def __init__(self, data_store, data_store_lock, url, headless=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.LOOP_PERIOD = 1
@@ -15,7 +15,6 @@ class Scraper(threading.Thread):
 
         self.data_store = data_store
         self.data_store_lock = data_store_lock
-        self.scraper_name = scraper_name
         self.stop_event = threading.Event()
 
         options = Options()
@@ -25,7 +24,10 @@ class Scraper(threading.Thread):
         self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
         self.driver.get(url)
 
-        print(f'{scraper_name} driver ready')
+        print(f'{url} driver ready')
+    
+    def get_name(self):
+        raise NotImplementedError()
 
     def loop(self):
         raise NotImplementedError()
@@ -45,4 +47,4 @@ class Scraper(threading.Thread):
 
     def update_data_store(self, data):
         with self.data_store_lock:
-            self.data_store[self.scraper_name] = data
+            self.data_store[self.get_name()] = data
