@@ -11,20 +11,36 @@ from scrapers.scraper import Scraper
 from util import process_name
 
 class BetfairScraper(Scraper):
-    def __init__(self, data_store, data_store_lock, scraper_name, url, headless=True):
-        super().__init__(data_store, data_store_lock, scraper_name, url, headless)
+    def __init__(self, data_store, data_store_lock, url, headless=True):
+        super().__init__(data_store, data_store_lock, url, headless)
 
         self.highest_matched = -1
+        self.name = 'betfair'
+    
+    def get_name(self):
+        return self.name
 
     def setup(self):
         try:
-            elems = (WebDriverWait(self.driver, self.TIMEOUT)
-                .until(EC.visibility_of_all_elements_located((By.XPATH, '//form[@class="ssc-lif"]'))))
-            elem = elems[0]
+            elem = (WebDriverWait(self.driver, self.TIMEOUT)
+                .until(EC.presence_of_element_located((By.XPATH, '//form[@class="ssc-lif"]'))))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
+        
+        try:
+            market_name_first_word = (WebDriverWait(self.driver, self.TIMEOUT)
+                .until(EC.presence_of_element_located((By.XPATH, '//span[@class="market-name"]')))
+                .text.strip().split()[0])
+        except TimeoutException:
+            print(f'Loading {self.get_name()} took too much time!')
+            self.stop()
+            return
+        if market_name_first_word.isnumeric():
+            self.name += f'_{market_name_first_word}_place'
+        else:
+            self.name += '_win'
 
         (elem
             .find_element(by=By.XPATH, value='.//input[@id="ssc-liu"]')
@@ -44,7 +60,7 @@ class BetfairScraper(Scraper):
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 
@@ -54,7 +70,7 @@ class BetfairScraper(Scraper):
                     (By.XPATH, './/span[@class="total-matched"]')))
                 .text.split()[1].replace(',', ''))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 

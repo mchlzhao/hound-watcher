@@ -10,6 +10,9 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class TabScraper(Scraper):
+    def get_name(self):
+        return 'tab'
+
     def setup(self):
         self.driver.find_element(by=By.XPATH, value='.//button[@data-testid="header-login"]').click()
 
@@ -18,7 +21,7 @@ class TabScraper(Scraper):
             login_elem = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.presence_of_element_located((By.XPATH, '//div[@data-testid="login-modal"]')))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
         
@@ -42,7 +45,7 @@ class TabScraper(Scraper):
             runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, '//div[@class="pseudo-body"]/div[@class="row"]')))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 

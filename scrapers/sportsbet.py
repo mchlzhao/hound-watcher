@@ -7,14 +7,16 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class SportsbetScraper(Scraper):
+    def get_name(self):
+        return 'sportsbet'
+
     def loop(self):
-        print(f'{self.scraper_name} in loop')
         try:
             runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, ('//div[@data-automation-id="racecard-body"]'
                      '/div[contains(@data-automation-id, "racecard-outcome")]'))))
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 
@@ -37,4 +39,3 @@ class SportsbetScraper(Scraper):
             
             data[name] = Back(back_odds)
         self.update_data_store(data)
-        print(f'{self.scraper_name} out of loop')

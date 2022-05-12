@@ -7,13 +7,16 @@ from odds_types import Back
 from scrapers.scraper import Scraper
 
 class LadbrokesScraper(Scraper):
+    def get_name(self):
+        return 'ladbrokes'
+
     def loop(self):
         try:
             elems = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, '//table[contains(@class, "race-table")]')))
             elem = elems[0]
         except TimeoutException:
-            print(f'Loading {self.scraper_name} took too much time!')
+            print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
 

@@ -1,6 +1,5 @@
 import math
 import signal
-import time
 
 from functools import partial
 from tabulate import tabulate
@@ -18,27 +17,66 @@ def get_betfair_odds(market_data, name):
 
 def analyse_data(market_data, bookie_promotion_types):
     global promo_index_to_name
+    global promos
     evs = {}
     for bookie_name, data in market_data.items():
         if 'betfair' in bookie_name:
-            print(f'{bookie_name}: {data["matched"]}')
             continue
 
         evs[bookie_name] = []
         for runner_name, runner_odds in data.items():
             betfair_odds = get_betfair_odds(market_data, runner_name)
-            for i, promo_func in enumerate(bookie_promotion_types.get(bookie_name, [])):
-                ev = promo_func(runner_odds, betfair_odds)
+            for promo_ind in bookie_promotion_types.get(bookie_name, []):
+                ev = promos[promo_ind](runner_odds, betfair_odds)
                 if ev is not None:
-                    evs[bookie_name].append((runner_name, promo_index_to_name[i], runner_odds.back_odds, *ev))
+                    evs[bookie_name].append((runner_name, promo_index_to_name[promo_ind], runner_odds.back_odds, *ev))
 
     return evs
 
+MAX_ROWS = 10
+
+def two_columnify(tables):
+    two_col_list = []
+    for i, table in enumerate(tables):
+        table_list = table.split('\n')
+        if i % 2 == 0:
+            two_col_list.extend([''] * len(table_list))
+        for j, line in enumerate(reversed(table_list)):
+            two_col_list[-j-1] += line
+    return '\n'.join(two_col_list)
+
+def loop():
+    global window
+    global MAX_ROWS
+    global data_store
+    global bookie_promos
+    global matched_box
+    evs = analyse_data(data_store, bookie_promos)
+    tables = []
+    for key, val in evs.items():
+        print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
+        if len(print_list) > MAX_ROWS:
+            print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
+        else:
+            print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
+        tables.append((tabulate(print_list, tablefmt='orgtbl',
+            headers=[f'{key} name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet'])))
+    global text_box
+    text_box.delete('1.0', tk.END)
+    text_box.insert(tk.END, two_columnify(tables))
+
+    matched_box_text = ''
+    for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place', 'betfair_4_place']:
+        if market in data_store and 'matched' in data_store[market]:
+            matched_box_text += f'{market}: {data_store[market]["matched"]}\n'
+    matched_box.delete('1.0', tk.END)
+    matched_box.insert(tk.END, matched_box_text)
+
+    window.after(5000, loop)
+
 def sigint_handler(signum, frame):
-    print('HANDLE SIGINT!')
     global scraper_manager
     scraper_manager.stop_all()
-    time.sleep(5)
     exit(0)
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -53,39 +91,68 @@ promo_index_to_name = [
     'DOUBLE WINNINGS BONUS',
 ]
 
+promos = [
+    no_promotion,
+    partial(bonus_back_if_place_but_no_win, 2),
+    partial(bonus_back_if_place_but_no_win, 3),
+    partial(bonus_back_if_place_but_no_win, 4),
+    double_winnings_in_bonus
+]
+
+bookie_promos = {
+    'bluebet': [0, 2],
+    'ladbrokes': [0, 2, 4],
+    'palmerbet': [0, 2],
+    'pointsbet': [0, 3],
+    'sportsbet': [0, 1, 2],
+    'tab': [0, 2],
+}
+
 data_store = {}
 scraper_manager = ScraperManager(data_store)
 
-while True:
-    line = input()
-    if ' ' not in line:
-        break
-    name, url = map(lambda x: x.strip(), line.split(' '))
-    scraper_manager.start(name, url)
+import tkinter as tk
 
-bookie_promos = {
-    'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-    'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4), double_winnings_in_bonus],
-    'palmerbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 3)],
-    'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 4)],
-    'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-    'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-}
+def on_create_thread_button_pressed(*args):
+    global url_entry
+    global window
+    url = url_entry.get()
+    url_label = tk.Label(master=window, text=url)
+    destroy_button = tk.Button(master=window, text='Stop')
+    destroy_button.config(command=partial(on_destroy_thread_button_press, label=url_label, button=destroy_button))
+    url_entry.delete(0, tk.END)
+    url_label.pack()
+    destroy_button.pack()
+    scraper_manager.start(url)
 
-MAX_ROWS = 10
+def on_destroy_thread_button_press(label, button):
+    scraper_manager.stop(label['text'])
+    label.destroy()
+    button.destroy()
 
-for i in range(2):
-    evs = analyse_data(data_store, bookie_promos)
-    print()
-    for key, val in evs.items():
-        print(key)
-        print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
-        if len(print_list) > MAX_ROWS:
-            print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
-        else:
-            print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
-        print(tabulate(print_list, tablefmt='orgtbl',
-            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
-    time.sleep(5)
+window = tk.Tk()
 
-scraper_manager.stop_all()
+matched_box = tk.Text(master=window, height=2, width=20)
+matched_box.pack()
+
+text_box = tk.Text(master=window, height=42, width=180, font=('courier new', 14))
+text_box.pack()
+
+url_entry = tk.Entry(master=window, width=50)
+url_entry.pack()
+
+window.bind('<Return>', on_create_thread_button_pressed)
+create_thread_button = tk.Button(master=window, command=on_create_thread_button_pressed, text='Scrape')
+create_thread_button.pack()
+
+loop()
+
+def clean_up():
+    global window
+    global scraper_manager
+    scraper_manager.stop_all()
+    window.destroy()
+
+window.protocol("WM_DELETE_WINDOW", clean_up)
+
+window.mainloop()
