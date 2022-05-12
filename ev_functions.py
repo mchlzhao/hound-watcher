@@ -1,5 +1,5 @@
 BONUS_TO_CASH_RATIO = 0.75
-BET_SIZE = 100
+BET_SIZE = 50
 
 def bonus_back_if_place_but_no_win(top_n, odds, prices):
     betfair_win = prices.get('betfair_win')

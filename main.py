@@ -17,6 +17,7 @@ def get_betfair_odds(market_data, name):
 
 def analyse_data(market_data, bookie_promotion_types):
     global promo_index_to_name
+    global promos
     evs = {}
     for bookie_name, data in market_data.items():
         if 'betfair' in bookie_name:
@@ -25,14 +26,24 @@ def analyse_data(market_data, bookie_promotion_types):
         evs[bookie_name] = []
         for runner_name, runner_odds in data.items():
             betfair_odds = get_betfair_odds(market_data, runner_name)
-            for i, promo_func in enumerate(bookie_promotion_types.get(bookie_name, [])):
-                ev = promo_func(runner_odds, betfair_odds)
+            for promo_ind in bookie_promotion_types.get(bookie_name, []):
+                ev = promos[promo_ind](runner_odds, betfair_odds)
                 if ev is not None:
-                    evs[bookie_name].append((runner_name, promo_index_to_name[i], runner_odds.back_odds, *ev))
+                    evs[bookie_name].append((runner_name, promo_index_to_name[promo_ind], runner_odds.back_odds, *ev))
 
     return evs
 
 MAX_ROWS = 10
+
+def two_columnify(tables):
+    two_col_list = []
+    for i, table in enumerate(tables):
+        table_list = table.split('\n')
+        if i % 2 == 0:
+            two_col_list.extend([''] * len(table_list))
+        for j, line in enumerate(reversed(table_list)):
+            two_col_list[-j-1] += line
+    return '\n'.join(two_col_list)
 
 def loop():
     global window
@@ -41,19 +52,18 @@ def loop():
     global bookie_promos
     global matched_box
     evs = analyse_data(data_store, bookie_promos)
-    text_box_text = ''
+    tables = []
     for key, val in evs.items():
-        text_box_text += key + '\n'
         print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
         if len(print_list) > MAX_ROWS:
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
             print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
-        text_box_text += (tabulate(print_list, tablefmt='orgtbl',
-            headers=['Name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet']))
+        tables.append((tabulate(print_list, tablefmt='orgtbl',
+            headers=[f'{key} name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet'])))
     global text_box
     text_box.delete('1.0', tk.END)
-    text_box.insert(tk.END, text_box_text)
+    text_box.insert(tk.END, two_columnify(tables))
 
     matched_box_text = ''
     for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place', 'betfair_4_place']:
@@ -81,13 +91,21 @@ promo_index_to_name = [
     'DOUBLE WINNINGS BONUS',
 ]
 
+promos = [
+    no_promotion,
+    partial(bonus_back_if_place_but_no_win, 2),
+    partial(bonus_back_if_place_but_no_win, 3),
+    partial(bonus_back_if_place_but_no_win, 4),
+    double_winnings_in_bonus
+]
+
 bookie_promos = {
-    'bluebet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-    'ladbrokes': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4), double_winnings_in_bonus],
-    'palmerbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 3)],
-    'pointsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 4)],
-    'sportsbet': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
-    'tab': [no_promotion, partial(bonus_back_if_place_but_no_win, 2), partial(bonus_back_if_place_but_no_win, 3), partial(bonus_back_if_place_but_no_win, 4)],
+    'bluebet': [0, 2],
+    'ladbrokes': [0, 2, 4],
+    'palmerbet': [0, 2],
+    'pointsbet': [0, 3],
+    'sportsbet': [0, 1, 2],
+    'tab': [0, 2],
 }
 
 data_store = {}
@@ -117,7 +135,7 @@ window = tk.Tk()
 matched_box = tk.Text(master=window, height=2, width=20)
 matched_box.pack()
 
-text_box = tk.Text(master=window, height=20, width=100, font=('courier new', 20))
+text_box = tk.Text(master=window, height=42, width=180, font=('courier new', 14))
 text_box.pack()
 
 url_entry = tk.Entry(master=window, width=50)
