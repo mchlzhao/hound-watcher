@@ -1,7 +1,9 @@
 class BackLay:
     def __init__(self, back_odds=None, lay_odds=None):
+        # back_odds < lay_odds
         self.back_odds = back_odds
         self.lay_odds = lay_odds
+        # back_prob > lay_prob
         self.back_prob = None if back_odds is None else (1 / back_odds)
         self.lay_prob = None if lay_odds is None else (1 / lay_odds)
         self.mid_prob = (None if self.back_odds is None or self.lay_odds is None 
