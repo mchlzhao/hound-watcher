@@ -17,15 +17,9 @@ class Scraper(threading.Thread):
         self.data_store_lock = data_store_lock
         self.stop_event = threading.Event()
 
-        options = Options()
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--start-maximized")
-        options.headless = headless
-        self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
-        self.driver.get(url)
+        self.url = url
+        self.headless = headless
 
-        print(f'{url} driver ready')
-    
     def get_name(self):
         raise NotImplementedError()
 
@@ -36,6 +30,14 @@ class Scraper(threading.Thread):
         pass
 
     def run(self):
+        options = Options()
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
+        options.headless = self.headless
+        self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
+        self.driver.get(self.url)
+        print(f'{self.url} driver ready')
+
         self.setup()
         while not self.stop_event.is_set():
             self.loop()
