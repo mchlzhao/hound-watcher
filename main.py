@@ -114,10 +114,10 @@ promos = [
 
 bookie_promos = {
     'bluebet': [0, 2],
-    'ladbrokes': [0, 1, 2, 4],
+    'ladbrokes': [0, 2, 4],
     'palmerbet': [0, 2],
     'pointsbet': [0, 3],
-    'sportsbet': [0, 1, 2],
+    'sportsbet': [0, 2],
     'tab': [0, 2],
 }
 
