@@ -33,6 +33,18 @@ def analyse_data(market_data, bookie_promotion_types):
 
     return evs
 
+def to_str(x, tuple_to_str=False):
+    if type(x) is str:
+        return x
+    if type(x) is float:
+        return f'{x:.2f}'
+    if type(x) is tuple:
+        tuple_of_strs = tuple(to_str(i, True) for i in x)
+        if tuple_to_str:
+            return f'({", ".join(tuple_of_strs)})'
+        return tuple_of_strs
+    return None
+
 MAX_ROWS = 10
 
 def two_columnify(tables):
@@ -55,12 +67,13 @@ def loop():
     tables = []
     for key, val in evs.items():
         print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
+        print_list = list(map(to_str, print_list))
         if len(print_list) > MAX_ROWS:
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
             print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
         tables.append((tabulate(print_list, tablefmt='orgtbl',
-            headers=[f'{key} name', 'Promo type', 'Bookie odds', 'EV', f'EV of {BET_SIZE} bet'])))
+            headers=[f'{key} name', 'Promo type', 'Bookie odds', 'EV / $1', f'EV / ${BET_SIZE}'])))
     global text_box
     text_box.delete('1.0', tk.END)
     text_box.insert(tk.END, two_columnify(tables))
@@ -85,10 +98,10 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 promo_index_to_name = [
     'NO PROMO',
-    'BONUS BACK IF 2ND',
-    'BONUS BACK IF 2ND-3RD',
-    'BONUS BACK IF 2ND-4TH',
-    'DOUBLE WINNINGS BONUS',
+    'BONUS IF 2ND',
+    'BONUS IF 2ND-3RD',
+    'BONUS IF 2ND-4TH',
+    'DOUBLE WIN AS BONUS',
 ]
 
 promos = [
@@ -101,7 +114,7 @@ promos = [
 
 bookie_promos = {
     'bluebet': [0, 2],
-    'ladbrokes': [0, 2, 4],
+    'ladbrokes': [0, 1, 2, 4],
     'palmerbet': [0, 2],
     'pointsbet': [0, 3],
     'sportsbet': [0, 1, 2],
