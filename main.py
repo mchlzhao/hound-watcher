@@ -35,7 +35,7 @@ def analyse_data(market_data, bookie_promotion_types):
 
 def to_str(x, tuple_to_str=False):
     if type(x) is str:
-        return x
+        return x[:MAX_STR_LEN]
     if type(x) is float:
         return f'{x:.2f}'
     if type(x) is tuple:
@@ -45,7 +45,9 @@ def to_str(x, tuple_to_str=False):
         return tuple_of_strs
     return None
 
-MAX_ROWS = 10
+MAX_ROWS = 8
+MAX_STR_LEN = 25
+filters = [lambda x: x[2] < 12]
 
 def two_columnify(tables):
     two_col_list = []
@@ -67,13 +69,15 @@ def loop():
     tables = []
     for key, val in evs.items():
         print_list = sorted(val, key=lambda x: math.inf if x[-1] is None else -x[-1])
+        for f in filters:
+            print_list = filter(f, print_list)
         print_list = list(map(to_str, print_list))
         if len(print_list) > MAX_ROWS:
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
             print_list.extend([(None, None, None, None, None)] * (MAX_ROWS + 1 - len(print_list)))
         tables.append((tabulate(print_list, tablefmt='orgtbl',
-            headers=[f'{key} name', 'Promo type', 'Bookie odds', 'EV / $1', f'EV / ${BET_SIZE}'])))
+            headers=[f'{key} Name', 'Promo Type', 'Bet Odds', 'EV/$1', f'EV/${BET_SIZE}'])))
     global text_box
     text_box.delete('1.0', tk.END)
     text_box.insert(tk.END, two_columnify(tables))
@@ -98,10 +102,10 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 promo_index_to_name = [
     'NO PROMO',
-    'BONUS IF 2ND',
-    'BONUS IF 2ND-3RD',
-    'BONUS IF 2ND-4TH',
-    'DOUBLE WIN AS BONUS',
+    'BONUS IF 2',
+    'BONUS IF 2-3',
+    'BONUS IF 2-4',
+    'DOUBLE BONUS',
 ]
 
 promos = [
@@ -116,9 +120,9 @@ bookie_promos = {
     'bluebet': [0, 2],
     'ladbrokes': [0, 2, 4],
     'palmerbet': [0, 2],
-    'pointsbet': [0, 3],
+    'pointsbet': [0, 2, 3],
     'sportsbet': [0, 2],
-    'tab': [0, 2],
+    'tab': [0, 2, 3],
 }
 
 data_store = {}
@@ -148,7 +152,7 @@ window = tk.Tk()
 matched_box = tk.Text(master=window, height=2, width=20)
 matched_box.pack()
 
-text_box = tk.Text(master=window, height=42, width=180, font=('courier new', 14))
+text_box = tk.Text(master=window, height=35, width=166, font=('courier new', 16))
 text_box.pack()
 
 url_entry = tk.Entry(master=window, width=50)
