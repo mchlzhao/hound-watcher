@@ -54,7 +54,9 @@ class TabScraper(Scraper):
             name_elem = (runner_elem
                 .find_element(by=By.XPATH, value='.//div[@class="runner-name"]'))
             ignore_len = sum([len(child_elem.text) for child_elem in name_elem.find_elements(by=By.XPATH, value='./*')])
-            name = name_elem.text[:-ignore_len].strip()
+            name = name_elem.text
+            if ignore_len > 0:
+                name = name_elem.text[:-ignore_len].strip()
 
             back_odds_elems = (runner_elem
                 .find_elements(by=By.XPATH, value='.//*[@data-test-parimutuel-win-price]/animate-odds-change/div/div'))
