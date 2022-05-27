@@ -45,10 +45,10 @@ class Scraper(threading.Thread):
             except Exception as e:
                 print(e)
                 with self.data_store_lock:
-                    self.data_store.pop(self.get_name())
+                    self.data_store.pop(self.get_name(), None)
             time.sleep(self.LOOP_PERIOD)
         with self.data_store_lock:
-            self.data_store.pop(self.get_name())
+            self.data_store.pop(self.get_name(), None)
         self.driver.close()
     
     def stop(self):
