@@ -45,6 +45,5 @@ class Bet365Scraper(Scraper):
                 except ValueError:
                     fixed_win_price = None
             
-            print(name, fixed_win_price)
             data[name] = Back(fixed_win_price)
         self.update_data_store(data)
