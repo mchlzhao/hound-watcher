@@ -157,6 +157,7 @@ text_box = tk.Text(master=window, height=35, width=166, font=('courier new', 16)
 text_box.pack()
 
 url_entry = tk.Entry(master=window, width=50)
+url_entry.focus_set()
 url_entry.pack()
 
 window.bind('<Return>', on_create_thread_button_pressed)
