@@ -1,5 +1,6 @@
 import threading
 
+from scrapers.betdeluxe import BetdeluxeScraper
 from scrapers.betfair import BetfairScraper
 from scrapers.bluebet import BluebetScraper
 from scrapers.ladbrokes import LadbrokesScraper
@@ -16,6 +17,8 @@ class ScraperManager:
     
     @staticmethod
     def url_to_scraper_class(url):
+        if 'betdeluxe' in url:
+            return BetdeluxeScraper
         if 'betfair' in url:
             return BetfairScraper
         if 'bluebet' in url:
