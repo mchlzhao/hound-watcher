@@ -14,7 +14,7 @@ class BetdeluxeScraper(Scraper):
 
     def loop(self):
         try:
-            runner_elems = WebDriverWait(self.driver, self.TIMEOUT).until(
+            runner_elems = WebDriverWait(self.driver, 2 * self.TIMEOUT).until(
                 EC.visibility_of_all_elements_located((By.XPATH, 
                     '//li[contains(@class, "RaceSelectionsListItem")]/div[contains(@class, "RaceSelectionsListItem")]')))
         except TimeoutException:
