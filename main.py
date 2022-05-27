@@ -136,17 +136,14 @@ def on_create_thread_button_pressed(*args):
     global url_entry
     global window
     url = url_entry.get()
-    url_label = tk.Label(master=window, text=url)
-    destroy_button = tk.Button(master=window, text='Stop')
-    destroy_button.config(command=partial(on_destroy_thread_button_press, label=url_label, button=destroy_button))
+    destroy_button = tk.Button(master=window, text=f'{url} Stop')
+    destroy_button.config(command=partial(on_destroy_thread_button_press, button=destroy_button))
     url_entry.delete(0, tk.END)
-    url_label.pack()
     destroy_button.pack()
     scraper_manager.start(url)
 
-def on_destroy_thread_button_press(label, button):
-    scraper_manager.stop(label['text'])
-    label.destroy()
+def on_destroy_thread_button_press(button):
+    scraper_manager.stop(button['text'][:-5])
     button.destroy()
 
 window = tk.Tk()
