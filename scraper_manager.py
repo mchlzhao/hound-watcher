@@ -1,5 +1,6 @@
 import threading
 
+from scrapers.bet365 import Bet365Scraper
 from scrapers.betdeluxe import BetdeluxeScraper
 from scrapers.betfair import BetfairScraper
 from scrapers.bluebet import BluebetScraper
@@ -17,6 +18,8 @@ class ScraperManager:
     
     @staticmethod
     def url_to_scraper_class(url):
+        if 'bet365' in url:
+            return Bet365Scraper
         if 'betdeluxe' in url:
             return BetdeluxeScraper
         if 'betfair' in url:
@@ -44,7 +47,7 @@ class ScraperManager:
             print(f'{url=} already being scraped')
             return
         
-        thread = scraper_class(self.data_store, self.data_store_lock, url)
+        thread = scraper_class(self.data_store, self.data_store_lock, url, headless=scraper_class != Bet365Scraper)
         thread.start()
         self.threads_by_url[url] = thread
     
