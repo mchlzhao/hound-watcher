@@ -1,5 +1,6 @@
 import re
 
+
 def process_name(name):
     if name[-3:].lower() == ' nz':
         name = name[:-3]
