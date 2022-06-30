@@ -30,12 +30,6 @@ class BetfairScraper(Scraper):
             elem = (WebDriverWait(self.driver, self.TIMEOUT)
                 .until(ec.presence_of_element_located(
                 (By.XPATH, '//form[@class="ssc-lif"]'))))
-        except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
-            self.stop()
-            return
-
-        try:
             market_name_first_word = (WebDriverWait(self.driver, self.TIMEOUT)
                 .until(ec.presence_of_element_located(
                 (By.XPATH, '//span[@class="market-name"]')))
@@ -44,6 +38,7 @@ class BetfairScraper(Scraper):
             print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
+
         if market_name_first_word.isnumeric():
             self.name += f'_{market_name_first_word}_place'
         else:
