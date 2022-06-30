@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from odds_types import BackLay
 from scrapers.scraper import Scraper
-from util import process_name
+from util import process_name, timeit
 
 
 class BetfairScraper(Scraper):
@@ -65,6 +65,7 @@ class BetfairScraper(Scraper):
 
         time.sleep(5)
 
+    @timeit(label='betfair scrape')
     def loop(self):
         try:
             elem = WebDriverWait(self.driver, self.TIMEOUT).until(
