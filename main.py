@@ -86,7 +86,7 @@ def loop():
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
             print_list.extend([(None, None, None, None, None)] * (
-                        MAX_ROWS + 1 - len(print_list)))
+                    MAX_ROWS + 1 - len(print_list)))
         tables.append((tabulate(print_list, tablefmt='orgtbl',
                                 headers=[f'{key} Name', 'Promo Type',
                                          'Bet Odds', 'EV/$1',
@@ -96,8 +96,8 @@ def loop():
     text_box.insert(tk.END, two_columnify(tables))
 
     matched_box_text = ''
-    for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place',
-                   'betfair_4_place']:
+    for market in ['betfair_win', 'betfair_2_places', 'betfair_3_places',
+                   'betfair_4_places']:
         if market in data_store and 'matched' in data_store[market]:
             matched_box_text += f'{market}: {data_store[market]["matched"]}\n'
     matched_box.delete('1.0', tk.END)
