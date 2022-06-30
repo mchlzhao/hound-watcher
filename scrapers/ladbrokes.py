@@ -1,6 +1,7 @@
 import time
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from odds_types import Back
 from scrapers.scraper import Scraper
@@ -31,6 +32,9 @@ class LadbrokesScraper(Scraper):
             by=By.XPATH, value='//ul[@class="race-switcher-list"]/li/a')
         for link in links:
             if round_num == int(link.text):
+                self.driver.find_element_by_tag_name('body').send_keys(
+                    Keys.CONTROL + Keys.HOME)
+                time.sleep(5)
                 link.click()
                 break
         else:
