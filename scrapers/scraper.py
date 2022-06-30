@@ -33,8 +33,8 @@ class Scraper(threading.Thread):
 
     def run(self):
         options = Options()
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--start-maximized")
+        options.add_argument('--window-size=1920,4320')
+        options.add_argument('--start-maximized')
         options.headless = self.headless
         self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH,
                                        options=options)
