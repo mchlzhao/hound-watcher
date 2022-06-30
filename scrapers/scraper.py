@@ -6,12 +6,14 @@ from selenium.webdriver.chrome.options import Options
 
 from config import WEBDRIVER_PATH
 
+
 class Scraper(threading.Thread):
-    def __init__(self, data_store, data_store_lock, url, headless=True, *args, **kwargs):
+    def __init__(self, data_store, data_store_lock, url, headless=True, *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.LOOP_PERIOD = 1
-        self.TIMEOUT = 10
+        self.LOOP_PERIOD = 2
+        self.TIMEOUT = 15
 
         self.data_store = data_store
         self.data_store_lock = data_store_lock
@@ -34,7 +36,8 @@ class Scraper(threading.Thread):
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
         options.headless = self.headless
-        self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH, options=options)
+        self.driver = webdriver.Chrome(executable_path=WEBDRIVER_PATH,
+                                       options=options)
         self.driver.get(self.url)
         print(f'{self.url} driver ready')
 
@@ -50,7 +53,7 @@ class Scraper(threading.Thread):
         with self.data_store_lock:
             self.data_store.pop(self.get_name(), None)
         self.driver.close()
-    
+
     def stop(self):
         self.stop_event.set()
 

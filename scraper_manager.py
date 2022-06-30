@@ -39,7 +39,7 @@ class ScraperManager:
             return TabScraper
         return None
 
-    def start(self, url):
+    def start(self, url, betfair_scrape_other_urls=True):
         scraper_class = ScraperManager.url_to_scraper_class(url)
         if scraper_class is None:
             print(f'don\'t know how to scrape {url=}')
@@ -48,8 +48,13 @@ class ScraperManager:
             print(f'{url=} already being scraped')
             return
 
-        thread = scraper_class(self.data_store, self.data_store_lock, url,
-                               headless=scraper_class != Bet365Scraper)
+        if scraper_class is BetfairScraper:
+            thread = BetfairScraper(self.data_store, self.data_store_lock, url,
+                                    scraper_manager=self,
+                                    scrape_other_urls=betfair_scrape_other_urls)
+        else:
+            thread = scraper_class(self.data_store, self.data_store_lock, url)
+
         thread.start()
         self.threads_by_url[url] = thread
 
