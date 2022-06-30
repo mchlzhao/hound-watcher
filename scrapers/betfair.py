@@ -30,12 +30,6 @@ class BetfairScraper(Scraper):
             elem = (WebDriverWait(self.driver, self.TIMEOUT)
                 .until(ec.presence_of_element_located(
                 (By.XPATH, '//form[@class="ssc-lif"]'))))
-        except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
-            self.stop()
-            return
-
-        try:
             market_name_first_word = (WebDriverWait(self.driver, self.TIMEOUT)
                 .until(ec.presence_of_element_located(
                 (By.XPATH, '//span[@class="market-name"]')))
@@ -44,6 +38,7 @@ class BetfairScraper(Scraper):
             print(f'Loading {self.get_name()} took too much time!')
             self.stop()
             return
+
         if market_name_first_word.isnumeric():
             self.name += f'_{market_name_first_word}_place'
         else:
@@ -67,18 +62,9 @@ class BetfairScraper(Scraper):
 
     def loop(self):
         try:
-            elem = WebDriverWait(self.driver, self.TIMEOUT).until(
-                ec.presence_of_element_located(
-                    (By.XPATH, '//div[contains(@class, "main-mv-container")]')))
-        except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
-            self.stop()
-            return
-
-        try:
             matched = int(WebDriverWait(self.driver, self.TIMEOUT).until(
                 ec.presence_of_element_located(
-                    (By.XPATH, './/span[@class="total-matched"]')))
+                    (By.CLASS_NAME, 'total-matched')))
                           .text.split()[1].replace(',', ''))
         except TimeoutException:
             print(f'Loading {self.get_name()} took too much time!')
@@ -92,33 +78,30 @@ class BetfairScraper(Scraper):
             self.highest_matched = matched
             data = {'matched': matched, 'markets': {}}
 
-            runners = (elem.find_elements(
-                by=By.XPATH, value='.//tr[@class="runner-line"]'))
-            for runner in runners:
-                runner_name = process_name(
-                    runner.find_element(
-                        by=By.XPATH,
-                        value='.//h3[contains(@class, "runner-name")]')
-                        .text)
+            for runner in self.driver.find_elements(by=By.CLASS_NAME,
+                                                    value='runner-line'):
+                runner_name = process_name(runner.find_element(
+                    by=By.XPATH,
+                    value='.//h3[contains(@class, "runner-name")]').text)
 
-                def get_price(text):
-                    val = (runner
-                           .find_element(by=By.XPATH,
-                                         value=f'.//td[contains(@class, "{text}-cell")]//span[@class="bet-button-price"]')
-                           .text)
+                def get_price(e):
                     try:
-                        return float(val)
+                        return float(e.text)
                     except ValueError:
                         return None
 
-                data['markets'][runner_name] = BackLay(get_price('last-back'),
-                                                       get_price('first-lay'))
+                prices = [get_price(e) for e in runner.find_elements(
+                    by=By.XPATH,
+                    value=f'.//td[contains(@class, "last-back-cell") or contains(@class, "first-lay-cell")]//span[@class="bet-button-price"]')]
+
+                data['markets'][runner_name] = BackLay(*sorted(prices))
 
             self.update_data_store(data)
 
-        refresh_button = elem.find_element(
+        refresh_button = self.driver.find_element(
             by=By.XPATH, value='.//button[contains(@class, "refresh-btn")]')
-        refresh_button.click()
+        if refresh_button is not None:
+            refresh_button.click()
 
     def get_other_urls(self):
         other_urls = []
