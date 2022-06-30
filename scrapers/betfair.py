@@ -93,8 +93,12 @@ class BetfairScraper(Scraper):
                 prices = [get_price(e) for e in runner.find_elements(
                     by=By.XPATH,
                     value=f'.//td[contains(@class, "last-back-cell") or contains(@class, "first-lay-cell")]//span[@class="bet-button-price"]')]
+                # in theory this should not happen
+                if prices[0] is not None and prices[1] is not None and \
+                        prices[0] > prices[1]:
+                    prices[0], prices[1] = prices[1], prices[0]
 
-                data['markets'][runner_name] = BackLay(*sorted(prices))
+                data['markets'][runner_name] = BackLay(*prices)
 
             self.update_data_store(data)
 
