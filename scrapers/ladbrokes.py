@@ -15,10 +15,11 @@ class LadbrokesScraper(Scraper):
                 value='//tr[contains(@class, "race-table-row") and not(contains(@class, "scratched"))]'):
             name = row_elem.find_element(by=By.CLASS_NAME,
                                          value='runner-name').text
+
             back_odds = float(row_elem.find_element(
                 by=By.XPATH,
                 value='.//span[@data-testid="price-button-odds"]').text)
-            print(name, back_odds)
+
             data[name] = Back(back_odds)
 
         self.update_data_store(data)

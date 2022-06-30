@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from odds_types import BackLay
 from scrapers.scraper import Scraper
+from util import process_name
 
 
 class BetfairScraper(Scraper):
@@ -84,9 +85,9 @@ class BetfairScraper(Scraper):
 
             for runner in self.driver.find_elements(by=By.CLASS_NAME,
                                                     value='runner-line'):
-                runner_name = runner.find_element(
+                runner_name = process_name(runner.find_element(
                     by=By.XPATH,
-                    value='.//h3[contains(@class, "runner-name")]').text
+                    value='.//h3[contains(@class, "runner-name")]').text)
 
                 def get_price(e):
                     try:
