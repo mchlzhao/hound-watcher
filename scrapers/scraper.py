@@ -21,6 +21,7 @@ class Scraper(threading.Thread):
 
         self.url = url
         self.headless = headless
+        self.driver = None
 
     def get_name(self):
         raise NotImplementedError()
