@@ -124,16 +124,17 @@ class NoPromo(PromoType):
 
     def get_ev_info(self, bookie, runner_name):
         betfair_win = self.data_store.get_odds('betfair_win', runner_name)
-        bookie_win = self.data_store.get(bookie, runner_name)
+        bookie_win = self.data_store.get_odds(bookie, runner_name)
         if any(map(lambda x: x is None, [bookie_win.back_odds, betfair_win])):
             return None
         if bookie_win.back_odds is None or betfair_win.mid_prob is None:
             return None
 
-        ev_per_dollar = self.ev_given_probs(bookie_win, betfair_win.mid_prob)
+        ev_per_dollar = self.ev_given_probs(bookie_win.back_odds,
+                                            betfair_win.mid_prob)
         ev_per_dollar_bounds = (
-            self.ev_given_probs(bookie_win, betfair_win.lay_prob),
-            self.ev_given_probs(bookie_win, betfair_win.back_prob))
+            self.ev_given_probs(bookie_win.back_odds, betfair_win.lay_prob),
+            self.ev_given_probs(bookie_win.back_odds, betfair_win.back_prob))
 
         if ev_per_dollar > 0:
             bet_amount = self.bet_limit if self.bet_limit is not None else \

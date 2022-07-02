@@ -4,18 +4,10 @@ from functools import partial
 
 from tabulate import tabulate
 
-from promo_types import bonus_back_if_place_but_no_win, \
-    double_winnings_in_bonus, no_promotion, BET_SIZE
+from data_store import DataStore
+from promo_types import BET_SIZE, NoPromo, \
+    BonusBackIfPlaceButNoWin, BonusBackEqualToWinnings
 from scraper_manager import ScraperManager
-from util import process_name
-
-
-def get_betfair_odds(market_data, name):
-    betfair_odds = {}
-    for bookie_name, data in market_data.items():
-        if 'betfair' in bookie_name:
-            betfair_odds[bookie_name] = data['markets'].get(process_name(name))
-    return betfair_odds
 
 
 def analyse_data(market_data, bookie_promotion_types):
@@ -28,10 +20,11 @@ def analyse_data(market_data, bookie_promotion_types):
 
         evs[bookie_name] = []
         for runner_name, runner_odds in data.items():
-            betfair_odds = get_betfair_odds(market_data, runner_name)
             for promo_ind in bookie_promotion_types.get(bookie_name, []):
-                ev = promos[promo_ind](runner_odds, betfair_odds)
-                if ev is not None:
+                evinfo = promos[promo_ind].get_ev_info(bookie_name, runner_name)
+                if evinfo is not None:
+                    ev = (evinfo.ev_per_dollar,
+                          *evinfo.ev_per_dollar_bounds), evinfo.ev_of_bet
                     evs[bookie_name].append((runner_name,
                                              promo_index_to_name[promo_ind],
                                              runner_odds.back_odds, *ev))
@@ -74,7 +67,7 @@ def loop():
     global data_store
     global bookie_promos
     global matched_box
-    evs = analyse_data(data_store, bookie_promos)
+    evs = analyse_data(data_store.data_store, bookie_promos)
     tables = []
     for key, val in evs.items():
         print_list = sorted(val,
@@ -98,8 +91,9 @@ def loop():
     matched_box_text = ''
     for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place',
                    'betfair_4_place']:
-        if market in data_store and 'matched' in data_store[market]:
-            matched_box_text += f'{market}: {data_store[market]["matched"]}\n'
+        if market in data_store.data_store and 'matched' in \
+                data_store.data_store[market]:
+            matched_box_text += f'{market}: {data_store.data_store[market]["matched"]}\n'
     matched_box.delete('1.0', tk.END)
     matched_box.insert(tk.END, matched_box_text)
 
@@ -114,6 +108,11 @@ def sigint_handler(signum, frame):
 
 signal.signal(signal.SIGINT, sigint_handler)
 
+data_store = DataStore()
+scraper_manager = ScraperManager(data_store)
+
+BONUS_TO_CASH_RATIO = 0.75
+
 promo_index_to_name = [
     'NO PROMO',
     'BONUS IF 2',
@@ -123,11 +122,19 @@ promo_index_to_name = [
 ]
 
 promos = [
-    no_promotion,
-    partial(bonus_back_if_place_but_no_win, 2),
-    partial(bonus_back_if_place_but_no_win, 3),
-    partial(bonus_back_if_place_but_no_win, 4),
-    double_winnings_in_bonus
+    NoPromo(data_store, bet_limit=50),
+    BonusBackIfPlaceButNoWin(data_store, 2,
+                             bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
+                             bet_limit=50),
+    BonusBackIfPlaceButNoWin(data_store, 3,
+                             bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
+                             bet_limit=50),
+    BonusBackIfPlaceButNoWin(data_store, 4,
+                             bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
+                             bet_limit=50),
+    BonusBackEqualToWinnings(data_store,
+                             bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
+                             winnings_limit=50),
 ]
 
 bookie_promos = {
@@ -140,9 +147,6 @@ bookie_promos = {
     'sportsbet': [0, 2],
     'tab': [0, 2, 3],
 }
-
-data_store = {}
-scraper_manager = ScraperManager(data_store)
 
 import tkinter as tk
 
