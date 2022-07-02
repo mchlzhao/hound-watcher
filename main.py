@@ -4,7 +4,7 @@ from functools import partial
 
 from tabulate import tabulate
 
-from ev_functions import bonus_back_if_place_but_no_win, \
+from promo_types import bonus_back_if_place_but_no_win, \
     double_winnings_in_bonus, no_promotion, BET_SIZE
 from scraper_manager import ScraperManager
 from util import process_name
@@ -86,7 +86,7 @@ def loop():
             print_list = print_list[:MAX_ROWS] + [('...', None, None, None)]
         else:
             print_list.extend([(None, None, None, None, None)] * (
-                        MAX_ROWS + 1 - len(print_list)))
+                    MAX_ROWS + 1 - len(print_list)))
         tables.append((tabulate(print_list, tablefmt='orgtbl',
                                 headers=[f'{key} Name', 'Promo Type',
                                          'Bet Odds', 'EV/$1',
