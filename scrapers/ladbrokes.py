@@ -12,7 +12,7 @@ class LadbrokesScraper(Scraper):
         data = {}
         for row_elem in self.driver.find_elements(
                 by=By.XPATH,
-                value='//tr[contains(@class, "race-table-row") and not(contains(@class, "scratched"))]'):
+                value='//table[not(contains(@class, "resulted"))]//tr[contains(@class, "race-table-row") and not(contains(@class, "scratched"))]'):
             name = row_elem.find_element(by=By.CLASS_NAME,
                                          value='runner-name').text
 

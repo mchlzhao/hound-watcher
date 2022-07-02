@@ -78,8 +78,9 @@ class BetfairScraper(Scraper):
             self.highest_matched = matched
             data = {'matched': matched, 'markets': {}}
 
-            for runner in self.driver.find_elements(by=By.CLASS_NAME,
-                                                    value='runner-line'):
+            runners = self.driver.find_elements(
+                by=By.XPATH, value='//tr[@class="runner-line"]')
+            for runner in runners:
                 runner_name = process_name(runner.find_element(
                     by=By.XPATH,
                     value='.//h3[contains(@class, "runner-name")]').text)
@@ -93,6 +94,7 @@ class BetfairScraper(Scraper):
                 prices = [get_price(e) for e in runner.find_elements(
                     by=By.XPATH,
                     value=f'.//td[contains(@class, "last-back-cell") or contains(@class, "first-lay-cell")]//span[@class="bet-button-price"]')]
+
                 # in theory this should not happen
                 if prices[0] is not None and prices[1] is not None and \
                         prices[0] > prices[1]:
