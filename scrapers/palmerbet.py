@@ -5,13 +5,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from entities.bookie_type import BookieType
 from entities.odds_types import Back
 from scrapers.scraper import Scraper
 
 
 class PalmerbetScraper(Scraper):
-    def get_name(self):
-        return 'palmerbet'
+    def get_bookie_type(self):
+        return BookieType.PALMERBET
 
     def loop(self):
         try:
@@ -19,7 +20,7 @@ class PalmerbetScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH,
                                                        '//tr/app-race-runner/div[not(contains(@class, "scratched"))]')))
         except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
+            print(f'Loading {self.get_bookie_type()} took too much time!')
             self.stop()
             return
 

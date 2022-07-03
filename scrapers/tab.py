@@ -6,13 +6,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from entities.bookie_type import BookieType
 from entities.odds_types import Back
 from scrapers.scraper import Scraper
 
 
 class TabScraper(Scraper):
-    def get_name(self):
-        return 'tab'
+    def get_bookie_type(self):
+        return BookieType.TAB
 
     def setup(self):
         self.driver.find_element(by=By.XPATH,
@@ -23,7 +24,7 @@ class TabScraper(Scraper):
                 EC.presence_of_element_located(
                     (By.XPATH, '//div[@data-testid="login-modal"]')))
         except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
+            print(f'Loading {self.get_bookie_type()} took too much time!')
             self.stop()
             return
 
@@ -51,7 +52,7 @@ class TabScraper(Scraper):
                 EC.visibility_of_all_elements_located((By.XPATH,
                                                        '//div[@class="pseudo-body"]/div[@class="row"]')))
         except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
+            print(f'Loading {self.get_bookie_type()} took too much time!')
             self.stop()
             return
 

@@ -5,6 +5,7 @@ from functools import partial
 from tabulate import tabulate
 
 from data_store import DataStore
+from entities.bookie_type import BookieType
 from entities.promo_types import BET_SIZE, NoPromo, \
     BonusBackIfPlaceButNoWin, BonusBackEqualToWinnings
 from scraper_manager import ScraperManager
@@ -14,18 +15,18 @@ def analyse_data(market_data, bookie_promotion_types):
     global promo_index_to_name
     global promos
     evs = {}
-    for bookie_name, data in market_data.items():
-        if 'betfair' in bookie_name:
+    for bookie_type, data in market_data.items():
+        if bookie_type in BookieType.BETFAIR:
             continue
 
-        evs[bookie_name] = []
+        evs[bookie_type] = []
         for runner_name, runner_odds in data.items():
-            for promo_ind in bookie_promotion_types.get(bookie_name, []):
-                evinfo = promos[promo_ind].get_ev_info(bookie_name, runner_name)
+            for promo_ind in bookie_promotion_types.get(bookie_type, []):
+                evinfo = promos[promo_ind].get_ev_info(bookie_type, runner_name)
                 if evinfo is not None:
                     ev = (evinfo.ev_per_dollar,
                           *evinfo.ev_per_dollar_bounds), evinfo.ev_of_bet
-                    evs[bookie_name].append((runner_name,
+                    evs[bookie_type].append((runner_name,
                                              promo_index_to_name[promo_ind],
                                              runner_odds.back_odds, *ev))
 
@@ -138,14 +139,14 @@ promos = [
 ]
 
 bookie_promos = {
-    'bet365': [0, 2],
-    'betdeluxe': [0, 2],
-    'bluebet': [0, 2],
-    'ladbrokes': [0, 2, 4],
-    'palmerbet': [0, 2],
-    'pointsbet': [0, 2, 3],
-    'sportsbet': [0, 2],
-    'tab': [0, 2, 3],
+    BookieType.BET365: [0, 2],
+    BookieType.BETDELUXE: [0, 2],
+    BookieType.BLUEBET: [0, 2],
+    BookieType.LADBROKES: [0, 2, 4],
+    BookieType.PALMERBET: [0, 2],
+    BookieType.POINTSBET: [0, 2, 3],
+    BookieType.SPORTSBET: [0, 2],
+    BookieType.TAB: [0, 2, 3],
 }
 
 import tkinter as tk

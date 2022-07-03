@@ -1,12 +1,13 @@
 from selenium.webdriver.common.by import By
 
+from entities.bookie_type import BookieType
 from entities.odds_types import Back
 from scrapers.scraper import Scraper
 
 
 class LadbrokesScraper(Scraper):
-    def get_name(self):
-        return 'ladbrokes'
+    def get_bookie_type(self):
+        return BookieType.LADBROKES
 
     def loop(self):
         data = {}

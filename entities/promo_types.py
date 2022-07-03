@@ -1,18 +1,20 @@
 from dataclasses import dataclass
 from typing import Tuple, Type
 
+from entities.bookie_type import BookieType
+
 BONUS_TO_CASH_RATIO = 0.75
 BET_SIZE = 50
 
 
 class PromoType:
-    def get_ev_info(self, bookie, runner_name):
+    def get_ev_info(self, bookie_type: BookieType, runner_name: str):
         raise NotImplementedError()
 
 
 @dataclass
 class EVInfo:
-    bookie: str
+    bookie_type: BookieType
     runner_name: str
     bookie_odds: float
     promo_type: Type[PromoType]
@@ -34,15 +36,16 @@ class BonusBackIfPlaceButNoWin(PromoType):
         self.winnings_limit = winnings_limit
         assert (bet_limit is None) != (winnings_limit is None)
 
-    def ev_given_probs(self, bookie_odds, win_prob, place_prob):
+    def ev_given_probs(self, bookie_odds: float, win_prob: float,
+                       place_prob: float) -> float:
         return bookie_odds * win_prob + self.bonus_to_cash_ratio * (
                 place_prob - win_prob) - 1
 
-    def get_ev_info(self, bookie, runner_name):
+    def get_ev_info(self, bookie_type: BookieType, runner_name: str):
         betfair_win = self.data_store.get_odds('betfair_win', runner_name)
         betfair_n_place = self.data_store.get_odds(
             f'betfair_{self.top_n}_place', runner_name)
-        bookie_win = self.data_store.get_odds(bookie, runner_name)
+        bookie_win = self.data_store.get_odds(bookie_type, runner_name)
 
         if any(map(lambda x: x is None,
                    [bookie_win, betfair_win, betfair_n_place])):
@@ -66,7 +69,8 @@ class BonusBackIfPlaceButNoWin(PromoType):
         else:
             bet_amount = 0
 
-        return EVInfo(bookie, runner_name, bookie_win.back_odds, self.__class__,
+        return EVInfo(bookie_type, runner_name, bookie_win.back_odds,
+                      self.__class__,
                       ev_per_dollar, ev_per_dollar_bounds, bet_amount,
                       ev_per_dollar * bet_amount)
 
@@ -82,13 +86,13 @@ class BonusBackEqualToWinnings(PromoType):
         self.winnings_limit = winnings_limit
         assert (bet_limit is None) != (winnings_limit is None)
 
-    def ev_given_prob(self, bookie_odds, win_prob):
+    def ev_given_prob(self, bookie_odds: float, win_prob: float) -> float:
         return (bookie_odds + (bookie_odds - 1) * self.bonus_to_cash_ratio) * \
                win_prob - 1
 
-    def get_ev_info(self, bookie, runner_name):
+    def get_ev_info(self, bookie_type: BookieType, runner_name: str):
         betfair_win = self.data_store.get_odds('betfair_win', runner_name)
-        bookie_win = self.data_store.get_odds(bookie, runner_name)
+        bookie_win = self.data_store.get_odds(bookie_type, runner_name)
         if bookie_win is None or bookie_win.back_odds is None or \
                 betfair_win is None or betfair_win.mid_prob is None:
             return None
@@ -105,7 +109,8 @@ class BonusBackEqualToWinnings(PromoType):
         else:
             bet_amount = 0
 
-        return EVInfo(bookie, runner_name, bookie_win.back_odds, self.__class__,
+        return EVInfo(bookie_type, runner_name, bookie_win.back_odds,
+                      self.__class__,
                       ev_per_dollar, ev_per_dollar_bounds, bet_amount,
                       ev_per_dollar * bet_amount)
 
@@ -119,12 +124,12 @@ class NoPromo(PromoType):
         self.winnings_limit = winnings_limit
         assert (bet_limit is None) != (winnings_limit is None)
 
-    def ev_given_probs(self, bookie_odds, win_prob):
+    def ev_given_probs(self, bookie_odds: float, win_prob: float) -> float:
         return bookie_odds * win_prob - 1
 
-    def get_ev_info(self, bookie, runner_name):
+    def get_ev_info(self, bookie_type: BookieType, runner_name: str):
         betfair_win = self.data_store.get_odds('betfair_win', runner_name)
-        bookie_win = self.data_store.get_odds(bookie, runner_name)
+        bookie_win = self.data_store.get_odds(bookie_type, runner_name)
         if any(map(lambda x: x is None, [bookie_win.back_odds, betfair_win])):
             return None
         if bookie_win.back_odds is None or betfair_win.mid_prob is None:
@@ -142,6 +147,7 @@ class NoPromo(PromoType):
         else:
             bet_amount = 0
 
-        return EVInfo(bookie, runner_name, bookie_win.back_odds, self.__class__,
+        return EVInfo(bookie_type, runner_name, bookie_win.back_odds,
+                      self.__class__,
                       ev_per_dollar, ev_per_dollar_bounds, bet_amount,
                       ev_per_dollar * bet_amount)

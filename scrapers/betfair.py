@@ -6,9 +6,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from entities.bookie_type import BookieType
 from entities.odds_types import BackLay
 from scrapers.scraper import Scraper
 from util import process_name
+
+
+def tab_title_to_name(tab_title: str):
+    return BookieType('betfair_' + '_'.join(tab_title.lower().split()))
 
 
 class BetfairScraper(Scraper):
@@ -17,32 +22,28 @@ class BetfairScraper(Scraper):
         super().__init__(data_store, data_store_lock, url, headless)
 
         self.highest_matched = -1
-        self.name = 'betfair'
+        self.bookie_type = None
 
         self.scrape_other_urls = scrape_other_urls
         self.scraper_manager = scraper_manager
 
-    def get_name(self):
-        return self.name
+    def get_bookie_type(self):
+        return self.bookie_type
 
     def setup(self):
         try:
-            elem = (WebDriverWait(self.driver, self.TIMEOUT)
-                .until(ec.presence_of_element_located(
-                (By.XPATH, '//form[@class="ssc-lif"]'))))
-            market_name_first_word = (WebDriverWait(self.driver, self.TIMEOUT)
-                .until(ec.presence_of_element_located(
-                (By.XPATH, '//span[@class="market-name"]')))
-                .text.strip().split()[0])
+            elem = WebDriverWait(self.driver, self.TIMEOUT).until(
+                ec.presence_of_element_located(
+                    (By.XPATH, '//form[@class="ssc-lif"]')))
         except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
+            print(f'Loading {self.get_bookie_type()} took too much time!')
             self.stop()
             return
 
-        if market_name_first_word.isnumeric():
-            self.name += f'_{market_name_first_word}_place'
-        else:
-            self.name += '_win'
+        selected_tab_title = self.driver.find_element(
+            by=By.XPATH,
+            value='.//div[@class="markets-tabs-container"]/ul/li[contains(@class, "selected")]').text
+        self.bookie_type = tab_title_to_name(selected_tab_title)
 
         if self.scrape_other_urls:
             for url in self.get_other_urls():
@@ -67,7 +68,7 @@ class BetfairScraper(Scraper):
                     (By.CLASS_NAME, 'total-matched')))
                           .text.split()[1].replace(',', ''))
         except TimeoutException:
-            print(f'Loading {self.get_name()} took too much time!')
+            print(f'Loading {self.get_bookie_type()} took too much time!')
             self.stop()
             return
 
