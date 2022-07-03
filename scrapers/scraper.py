@@ -21,6 +21,7 @@ class Scraper(threading.Thread):
 
         self.url = url
         self.headless = headless
+        self.driver = None
 
     def get_name(self):
         raise NotImplementedError()
@@ -48,10 +49,10 @@ class Scraper(threading.Thread):
             except Exception as e:
                 print(e)
                 with self.data_store_lock:
-                    self.data_store.pop(self.get_name(), None)
+                    self.data_store.clear_data(self.get_name())
             time.sleep(self.LOOP_PERIOD)
         with self.data_store_lock:
-            self.data_store.pop(self.get_name(), None)
+            self.data_store.clear_data(self.get_name())
         self.driver.close()
 
     def stop(self):
@@ -59,4 +60,4 @@ class Scraper(threading.Thread):
 
     def update_data_store(self, data):
         with self.data_store_lock:
-            self.data_store[self.get_name()] = data
+            self.data_store.update_data(self.get_name(), data)
