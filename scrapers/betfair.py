@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from odds_types import BackLay
+from entities.odds_types import BackLay
 from scrapers.scraper import Scraper
 from util import process_name
 

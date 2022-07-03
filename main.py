@@ -5,7 +5,7 @@ from functools import partial
 from tabulate import tabulate
 
 from data_store import DataStore
-from promo_types import BET_SIZE, NoPromo, \
+from entities.promo_types import BET_SIZE, NoPromo, \
     BonusBackIfPlaceButNoWin, BonusBackEqualToWinnings
 from scraper_manager import ScraperManager
 

@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 
-from odds_types import Back
+from entities.odds_types import Back
 from scrapers.scraper import Scraper
 
 
