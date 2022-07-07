@@ -17,7 +17,7 @@ def analyse_data(market_data, bookie_promotion_types):
     global promos
     evs = {}
     for bookie_type, data in market_data.items():
-        if bookie_type in BookieType.BETFAIR:
+        if bookie_type.is_betfair():
             continue
 
         evs[bookie_type] = []
@@ -91,8 +91,7 @@ def loop():
     text_box.insert(tk.END, two_columnify(tables))
 
     matched_box_text = ''
-    for market in ['betfair_win', 'betfair_2_place', 'betfair_3_place',
-                   'betfair_4_place']:
+    for market in BookieType.BETFAIR:
         if market in data_store.data_store and 'matched' in \
                 data_store.data_store[market]:
             matched_box_text += f'{market}: {data_store.data_store[market]["matched"]}\n'

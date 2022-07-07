@@ -16,3 +16,19 @@ class BookieType(str, Enum):
     POINTSBET = 'pointsbet'
     SPORTSBET = 'sportsbet'
     TAB = 'tab'
+
+    def is_betfair(self):
+        return self.value in [BookieType.BETFAIR_WIN,
+                              BookieType.BETFAIR_2_PLACES,
+                              BookieType.BETFAIR_3_PLACES,
+                              BookieType.BETFAIR_4_PLACES]
+
+    @classmethod
+    def to_betfair_place(cls, n):
+        if n == 2:
+            return BookieType.BETFAIR_2_PLACES
+        if n == 3:
+            return BookieType.BETFAIR_3_PLACES
+        if n == 4:
+            return BookieType.BETFAIR_4_PLACES
+        return None

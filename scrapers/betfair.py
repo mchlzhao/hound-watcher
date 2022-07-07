@@ -32,7 +32,7 @@ class BetfairScraper(Scraper):
 
     def setup(self):
         try:
-            elem = WebDriverWait(self.driver, self.TIMEOUT).until(
+            login_elem = WebDriverWait(self.driver, self.TIMEOUT).until(
                 ec.presence_of_element_located(
                     (By.XPATH, '//form[@class="ssc-lif"]')))
         except TimeoutException:
@@ -40,22 +40,29 @@ class BetfairScraper(Scraper):
             self.stop()
             return
 
-        selected_tab_title = self.driver.find_element(
-            by=By.XPATH,
-            value='.//div[@class="markets-tabs-container"]/ul/li[contains(@class, "selected")]').text
-        self.bookie_type = tab_title_to_name(selected_tab_title)
+        try:
+            tab_elem = WebDriverWait(self.driver, self.TIMEOUT).until(
+                ec.presence_of_element_located(
+                    (By.XPATH,
+                     './/div[@class="markets-tabs-container"]/ul/li[contains(@class, "selected")]')))
+        except TimeoutException:
+            print('Could not find selected market tab')
+            self.stop()
+            return
+
+        self.bookie_type = tab_title_to_name(tab_elem.text)
 
         if self.scrape_other_urls:
             for url in self.get_other_urls():
                 self.scraper_manager.start(url, False)
 
-        (elem
+        (login_elem
          .find_element(by=By.XPATH, value='.//input[@id="ssc-liu"]')
          .send_keys(os.environ['BETFAIR_UN']))
-        (elem
+        (login_elem
          .find_element(by=By.XPATH, value='.//input[@id="ssc-lipw"]')
          .send_keys(os.environ['BETFAIR_PW']))
-        (elem
+        (login_elem
          .find_element(by=By.XPATH, value='.//input[@id="ssc-lis"]')
          .click())
 

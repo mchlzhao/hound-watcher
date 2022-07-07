@@ -70,7 +70,7 @@ class TabScraper(Scraper):
 
             back_odds_elems = (runner_elem
                                .find_elements(by=By.XPATH,
-                                              value='.//*[@data-test-parimutuel-win-price]/animate-odds-change/div/div'))
+                                              value='.//*[@data-test-fixed-odds-win-price]/animate-odds-change/div/div'))
             if len(back_odds_elems) == 0:
                 back_odds = None
             else:

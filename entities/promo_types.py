@@ -42,9 +42,10 @@ class BonusBackIfPlaceButNoWin(PromoType):
                 place_prob - win_prob) - 1
 
     def get_ev_info(self, bookie_type: BookieType, runner_name: str):
-        betfair_win = self.data_store.get_odds('betfair_win', runner_name)
+        betfair_win = self.data_store.get_odds(BookieType.BETFAIR_WIN,
+                                               runner_name)
         betfair_n_place = self.data_store.get_odds(
-            f'betfair_{self.top_n}_place', runner_name)
+            BookieType.to_betfair_place(self.top_n), runner_name)
         bookie_win = self.data_store.get_odds(bookie_type, runner_name)
 
         if any(map(lambda x: x is None,
@@ -91,7 +92,8 @@ class BonusBackEqualToWinnings(PromoType):
                win_prob - 1
 
     def get_ev_info(self, bookie_type: BookieType, runner_name: str):
-        betfair_win = self.data_store.get_odds('betfair_win', runner_name)
+        betfair_win = self.data_store.get_odds(BookieType.BETFAIR_WIN,
+                                               runner_name)
         bookie_win = self.data_store.get_odds(bookie_type, runner_name)
         if bookie_win is None or bookie_win.back_odds is None or \
                 betfair_win is None or betfair_win.mid_prob is None:
@@ -130,7 +132,8 @@ class BonusBackEqualToStakeIfWin(PromoType):
         return (bookie_odds + self.bonus_to_cash_ratio) * win_prob - 1
 
     def get_ev_info(self, bookie_type: BookieType, runner_name: str):
-        betfair_win = self.data_store.get_odds('betfair_win', runner_name)
+        betfair_win = self.data_store.get_odds(BookieType.BETFAIR_WIN,
+                                               runner_name)
         bookie_win = self.data_store.get_odds(bookie_type, runner_name)
         if bookie_win is None or betfair_win is None or \
                 bookie_win.back_odds is None or betfair_win.mid_prob is None:
@@ -168,7 +171,8 @@ class NoPromo(PromoType):
         return bookie_odds * win_prob - 1
 
     def get_ev_info(self, bookie_type: BookieType, runner_name: str):
-        betfair_win = self.data_store.get_odds('betfair_win', runner_name)
+        betfair_win = self.data_store.get_odds(BookieType.BETFAIR_WIN,
+                                               runner_name)
         bookie_win = self.data_store.get_odds(bookie_type, runner_name)
         if bookie_win is None or betfair_win is None or \
                 bookie_win.back_odds is None or betfair_win.mid_prob is None:
