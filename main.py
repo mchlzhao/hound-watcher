@@ -7,7 +7,8 @@ from tabulate import tabulate
 from data_store import DataStore
 from entities.bookie_type import BookieType
 from entities.promo_types import BET_SIZE, NoPromo, \
-    BonusBackIfPlaceButNoWin, BonusBackEqualToWinnings
+    BonusBackIfPlaceButNoWin, BonusBackEqualToWinnings, \
+    BonusBackEqualToStakeIfWin
 from scraper_manager import ScraperManager
 
 
@@ -120,6 +121,7 @@ promo_index_to_name = [
     'BONUS IF 2-3',
     'BONUS IF 2-4',
     'DOUBLE BONUS',
+    'STAKE BACK',
 ]
 
 promos = [
@@ -136,6 +138,9 @@ promos = [
     BonusBackEqualToWinnings(data_store,
                              bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
                              winnings_limit=50),
+    BonusBackEqualToStakeIfWin(data_store,
+                               bonus_to_cash_ratio=BONUS_TO_CASH_RATIO,
+                               bet_limit=25),
 ]
 
 bookie_promos = {
@@ -146,7 +151,7 @@ bookie_promos = {
     BookieType.PALMERBET: [0, 2],
     BookieType.POINTSBET: [0, 2, 3],
     BookieType.SPORTSBET: [0, 2],
-    BookieType.TAB: [0, 2, 3],
+    BookieType.TAB: [0, 2, 3, 5],
 }
 
 import tkinter as tk
